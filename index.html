@@ -121,22 +121,69 @@
           <div class="timer" id="timer">00:00:00</div>
           <div class="subtle" id="timerSub">Noch nicht gestartet.</div>
         </section>
+
         <section class="card xp-card">
           <h3>⭐ XP</h3>
           <div class="xp-total" id="xpTotal">0 XP</div>
           <div class="subtle" id="dayXp">Heute: +0 XP</div>
           <div class="subtle xp-rule">Lightweight: +10 XP · grössere Tasks: mindestens +10 XP, dann +10 XP je volle 30 Minuten · maximal +50 XP pro Task.</div>
         </section>
+
+        <section class="card custom-card">
+          <div class="custom-card-head">
+            <div>
+              <h3>➕ Custom Quest</h3>
+              <p class="subtle">Eigene Aufgabe in den Random-Pool legen.</p>
+            </div>
+          </div>
+          <form id="customTaskForm" class="custom-form">
+            <label for="customTitle">Quest</label>
+            <input id="customTitle" maxlength="80" autocomplete="off" placeholder="z. B. Fotos sortieren" required />
+
+            <div class="custom-grid">
+              <div>
+                <label for="customDuration">Dauer <span class="optional">optional</span></label>
+                <div class="duration-input"><input id="customDuration" type="number" min="1" max="480" inputmode="numeric" placeholder="30" /><span>Min.</span></div>
+              </div>
+              <div>
+                <label for="customType">Art</label>
+                <select id="customType">
+                  <option value="focus">Work / Creative</option>
+                  <option value="light">Lightweight</option>
+                </select>
+              </div>
+            </div>
+
+            <label>Wiederholbar?</label>
+            <div class="repeat-choice" role="group" aria-label="Wiederholbar">
+              <button type="button" class="repeat-option active" data-repeat="yes">Ja · dauerhaft</button>
+              <button type="button" class="repeat-option" data-repeat="no">Nein · nur heute</button>
+            </div>
+            <p class="tiny repeat-help" id="repeatHelp">Bleibt auch nach dem Abschluss und an neuen Tagen im Random-Pool.</p>
+
+            <button class="secondary custom-add" type="submit">+ Quest hinzufügen</button>
+          </form>
+
+          <div class="custom-list-wrap">
+            <div class="custom-list-title">Eigene Quests <span id="customCount">0</span></div>
+            <div id="customTaskList" class="custom-task-list">
+              <div class="tiny">Noch keine Custom Quests.</div>
+            </div>
+          </div>
+        </section>
+
         <section class="card">
           <h3>⚖️ Randomizer-Balance</h3>
           <div class="subtle" id="weightText">Normaler Mix aus Focus und Lightweight.</div>
           <div class="bar"><div id="weightBar"></div></div>
           <div class="balance"><span class="tiny">Lightweight-Bonus</span><strong id="bonusText">0 %</strong></div>
         </section>
+
         <section class="card wide">
           <h3>✅ Heute erledigt</h3>
           <ul class="history" id="history"><li><span class="n">–</span><span>Noch kein Random-Task erledigt.</span></li></ul>
         </section>
+
         <section class="card wide">
           <h3>🏁 Nicht alles schaffen.</h3>
           <p class="subtle">Du kannst jederzeit Feierabend machen. Es gibt keine Mindestanzahl an Tasks und keinen Bonus dafür, die ganze Liste an einem Tag abzuarbeiten.</p>

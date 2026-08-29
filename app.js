@@ -382,7 +382,6 @@
 
   function startDay() {
     if (state.startedAt && !state.endedAt) return;
-    state.customTasks = state.customTasks.filter(t => t.repeatable !== false);
     state.startedAt = Date.now();
     state.endedAt = null;
     state.screen = "random";

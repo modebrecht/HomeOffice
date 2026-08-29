@@ -58,3 +58,10 @@ if (!document.querySelector('script[data-homeoffice-sidequests]')) {
   sideQuestScript.dataset.homeofficeSidequests = 'true';
   document.head.appendChild(sideQuestScript);
 }
+
+if (!document.querySelector('script[data-homeoffice-cloud-sync]')) {
+  const cloudSyncScript = document.createElement('script');
+  cloudSyncScript.src = 'cloud-sync.js';
+  cloudSyncScript.dataset.homeofficeCloudSync = 'true';
+  document.head.appendChild(cloudSyncScript);
+}

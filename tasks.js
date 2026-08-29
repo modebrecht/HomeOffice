@@ -51,3 +51,10 @@ window.HOME_TASKS = [
       body: `<p>Nimm ein Buch, das dich interessiert, und lies ein paar Seiten.</p><p>Kein Lernziel, keine Zusammenfassung und kein Pflichtpensum.</p><div class="hint">Einfach lesen, bis die Zeit vorbei ist – oder bis es sich nach genug anfühlt.</div>`
     }
   ];
+
+if (!document.querySelector('script[data-homeoffice-sidequests]')) {
+  const sideQuestScript = document.createElement('script');
+  sideQuestScript.src = 'sidequests.js';
+  sideQuestScript.dataset.homeofficeSidequests = 'true';
+  document.head.appendChild(sideQuestScript);
+}

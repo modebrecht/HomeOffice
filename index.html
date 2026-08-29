@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#0b1020" />
   <title>Andrin Homeoffice</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="overrides.css" />
 </head>
 <body>
   <div class="shell">
@@ -15,160 +16,127 @@
         <h1>Andrin Homeoffice</h1>
         <p>Start und Feierabend sind fix. Dazwischen entscheidet der Würfel. Du musst nicht alle Tasks an einem Tag schaffen – ein guter Homeoffice-Tag darf klein sein.</p>
       </div>
-      <div class="status" id="statusPill">Noch nicht gestartet</div>
+      <div class="header-status">
+        <div class="xp-chip">⭐ <strong id="headerXp">0 XP</strong></div>
+        <div class="status" id="statusPill">Noch nicht gestartet</div>
+      </div>
     </header>
 
     <main class="layout">
       <section class="card stage">
-        <!-- START -->
         <div id="startScreen" class="screen active">
           <div class="eyebrow">🟢 Fixer Start</div>
           <h2>Zeit starten.</h2>
           <p class="lead">Starte deinen Homeoffice-Block. Ab dann zählt nur der nächste Schritt – nicht die ganze Liste.</p>
-
           <div class="timebox">
-            <div class="metric">
-              <span>Startzeit</span>
-              <strong id="startTimePreview">–</strong>
-            </div>
-            <div class="metric">
-              <span>Heute gilt</span>
-              <strong>Ein Task nach dem anderen</strong>
-            </div>
+            <div class="metric"><span>Startzeit</span><strong id="startTimePreview">–</strong></div>
+            <div class="metric"><span>Heute gilt</span><strong>Ein Task nach dem anderen</strong></div>
           </div>
-
-          <div class="actions">
-            <button class="primary" id="startBtn">▶ Homeoffice starten</button>
-          </div>
-
-          <div class="burger">
-            <b>START</b> → 🎲 Random Tasks → <b>FINAL</b>
-          </div>
+          <div class="actions"><button class="primary" id="startBtn">▶ Homeoffice starten</button></div>
+          <div class="burger"><b>START</b> → 🎲 Random Tasks → <b>FINAL</b></div>
         </div>
 
-        <!-- RANDOMIZER -->
         <div id="randomScreen" class="screen">
           <div class="eyebrow">🎲 Randomizer</div>
           <h2>Was kommt als Nächstes?</h2>
           <p class="lead">Nach einem Arbeits- oder Creative-Task werden Lightweight-Tasks automatisch um <b>40&nbsp;% höher gewichtet</b>. So entsteht mehr Abwechslung statt Dauerleistung.</p>
 
-          <div class="cube-area">
-            <div class="cube-shadow" id="cubeShadow"></div>
-            <div class="cube" id="cube" aria-label="3D Würfel">
-              <div class="face front">
-                <i class="pip c5"></i>
-              </div>
-              <div class="face back">
-                <i class="pip c1"></i><i class="pip c3"></i><i class="pip c7"></i><i class="pip c9"></i><i class="pip c5"></i><i class="pip c2"></i>
-              </div>
-              <div class="face right">
-                <i class="pip c1"></i><i class="pip c5"></i><i class="pip c9"></i>
-              </div>
-              <div class="face left">
-                <i class="pip c1"></i><i class="pip c3"></i><i class="pip c7"></i><i class="pip c9"></i>
-              </div>
-              <div class="face top">
-                <i class="pip c1"></i><i class="pip c9"></i>
-              </div>
-              <div class="face bottom">
-                <i class="pip c1"></i><i class="pip c3"></i><i class="pip c5"></i><i class="pip c7"></i><i class="pip c9"></i>
+          <div id="dicePanel">
+            <div class="cube-area">
+              <div class="cube-shadow" id="cubeShadow"></div>
+              <div class="cube" id="cube" aria-label="3D Würfel">
+                <div class="face front"><i class="pip c5"></i></div>
+                <div class="face back"><i class="pip c1"></i><i class="pip c3"></i><i class="pip c7"></i><i class="pip c9"></i><i class="pip c5"></i><i class="pip c2"></i></div>
+                <div class="face right"><i class="pip c1"></i><i class="pip c5"></i><i class="pip c9"></i></div>
+                <div class="face left"><i class="pip c1"></i><i class="pip c3"></i><i class="pip c7"></i><i class="pip c9"></i></div>
+                <div class="face top"><i class="pip c1"></i><i class="pip c9"></i></div>
+                <div class="face bottom"><i class="pip c1"></i><i class="pip c3"></i><i class="pip c5"></i><i class="pip c7"></i><i class="pip c9"></i></div>
               </div>
             </div>
-          </div>
-
-          <div class="roll-label" id="rollLabel">Bereit?</div>
-
-          <div class="actions" style="justify-content:center">
-            <button class="primary" id="rollBtn">🎲 Würfeln</button>
-            <button class="secondary" id="doneBtn" disabled>✓ Task erledigt</button>
+            <div class="roll-label" id="rollLabel">Bereit?</div>
+            <div class="actions dice-actions"><button class="primary" id="rollBtn">🎲 Würfeln</button></div>
           </div>
 
           <article class="task-card hidden" id="taskCard">
             <div class="task-head">
               <div class="task-title">
                 <div class="task-icon" id="taskIcon">✨</div>
-                <div>
-                  <h3 id="taskTitle">Task</h3>
-                  <div class="task-meta" id="taskTime">Zeit</div>
-                </div>
+                <div><h3 id="taskTitle">Task</h3><div class="task-meta" id="taskTime">Zeit</div></div>
               </div>
               <span class="pill" id="taskCategory">Lightweight</span>
             </div>
+
+            <div class="task-runner">
+              <div><span class="task-runner-label">Zeit an diesem Task</span><strong id="taskTimer">00:00:00</strong></div>
+              <div class="task-xp-live"><span>XP beim Abschluss</span><strong id="taskXpPreview">+10 XP</strong></div>
+            </div>
+
             <div class="task-body" id="taskBody"></div>
+
+            <div class="task-footer">
+              <button class="primary" id="taskStartBtn">▶ Task starten</button>
+              <div class="task-finish-zone hidden" id="taskFinishZone">
+                <button class="finish-toggle" id="finishToggle" type="button" aria-pressed="false">
+                  <span class="toggle-track"><span class="toggle-knob"></span></span>
+                  <span id="finishToggleText">Task fertig? AUS</span>
+                </button>
+                <button class="complete-task hidden" id="completeTaskBtn">✓ Task abschliessen</button>
+              </div>
+            </div>
           </article>
         </div>
 
-        <!-- FINAL -->
         <div id="finalScreen" class="screen">
           <div class="eyebrow">🔴 Fixer Abschluss</div>
           <h2>Feierabend.</h2>
           <p class="lead">Timer stoppen, kurz zurückschauen, Gefühl festhalten. Danach ist der Homeoffice-Block wirklich fertig.</p>
-
           <div class="final-grid">
             <div class="metric"><span>Start</span><strong id="finalStart">–</strong></div>
             <div class="metric"><span>Ende</span><strong id="finalEnd">–</strong></div>
             <div class="metric"><span>Gesamt</span><strong id="finalDuration">–</strong></div>
           </div>
-
+          <div class="final-xp">⭐ Heute gesammelt: <strong id="finalXp">0 XP</strong></div>
           <label>Welche Tasks habe ich gemacht?</label>
           <div id="finalTasks" class="subtle">Noch keine erledigten Tasks.</div>
-
           <label>Wie fühlst du dich jetzt?</label>
           <div class="feeling-grid" id="feelings">
-            <button class="feel">🙂 zufrieden</button>
-            <button class="feel">😌 entspannt</button>
-            <button class="feel">😴 müde</button>
-            <button class="feel">✨ motiviert</button>
-            <button class="feel">🎨 kreativ</button>
-            <button class="feel">🌿 ruhig</button>
-            <button class="feel">💪 stolz</button>
-            <button class="feel">🫠 erschöpft</button>
+            <button class="feel">🙂 zufrieden</button><button class="feel">😌 entspannt</button><button class="feel">😴 müde</button><button class="feel">✨ motiviert</button>
+            <button class="feel">🎨 kreativ</button><button class="feel">🌿 ruhig</button><button class="feel">💪 stolz</button><button class="feel">🫠 erschöpft</button>
           </div>
           <textarea id="feelingText" placeholder="Oder beschreibe dein Gefühl mit eigenen Worten …"></textarea>
-
           <label>Was hat heute gut funktioniert?</label>
           <textarea id="goodText" placeholder="Zum Beispiel: Ich konnte mich gut auf einen Task konzentrieren …"></textarea>
-
           <label>Was war schwierig?</label>
           <textarea id="hardText" placeholder="Zum Beispiel: Der Einstieg war schwierig …"></textarea>
-
           <label>Was möchtest du beim nächsten Homeoffice-Tag anders machen?</label>
           <textarea id="nextText" placeholder="Ein kleiner Gedanke reicht."></textarea>
-
-          <div class="actions" style="margin-top:18px">
-            <button class="primary" id="resetBtn">↻ Neuen Tag starten</button>
-          </div>
-
-          <div class="burger">
-            🍔 <b>Timer aus.</b> Für heute ist genug.
-          </div>
+          <div class="actions" style="margin-top:18px"><button class="primary" id="resetBtn">↻ Neuen Tag starten</button></div>
+          <div class="burger">🍔 <b>Timer aus.</b> Für heute ist genug.</div>
         </div>
       </section>
 
       <aside class="side">
         <section class="card">
-          <h3>⏱️ Laufende Zeit</h3>
+          <h3>⏱️ Homeoffice-Zeit</h3>
           <div class="timer" id="timer">00:00:00</div>
           <div class="subtle" id="timerSub">Noch nicht gestartet.</div>
         </section>
-
+        <section class="card xp-card">
+          <h3>⭐ XP</h3>
+          <div class="xp-total" id="xpTotal">0 XP</div>
+          <div class="subtle" id="dayXp">Heute: +0 XP</div>
+          <div class="subtle xp-rule">Lightweight: +10 XP · grössere Tasks: mindestens +10 XP, dann +10 XP je volle 30 Minuten · maximal +50 XP pro Task.</div>
+        </section>
         <section class="card">
           <h3>⚖️ Randomizer-Balance</h3>
           <div class="subtle" id="weightText">Normaler Mix aus Focus und Lightweight.</div>
           <div class="bar"><div id="weightBar"></div></div>
-          <div class="balance">
-            <span class="tiny">Lightweight-Bonus</span>
-            <strong id="bonusText">0 %</strong>
-          </div>
+          <div class="balance"><span class="tiny">Lightweight-Bonus</span><strong id="bonusText">0 %</strong></div>
         </section>
-
         <section class="card wide">
           <h3>✅ Heute erledigt</h3>
-          <ul class="history" id="history">
-            <li><span class="n">–</span><span>Noch kein Random-Task erledigt.</span></li>
-          </ul>
+          <ul class="history" id="history"><li><span class="n">–</span><span>Noch kein Random-Task erledigt.</span></li></ul>
         </section>
-
         <section class="card wide">
           <h3>🏁 Nicht alles schaffen.</h3>
           <p class="subtle">Du kannst jederzeit Feierabend machen. Es gibt keine Mindestanzahl an Tasks und keinen Bonus dafür, die ganze Liste an einem Tag abzuarbeiten.</p>
@@ -177,7 +145,6 @@
       </aside>
     </main>
   </div>
-
 <script src="app.js"></script>
 </body>
 </html>

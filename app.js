@@ -1,7 +1,14 @@
 (() => {
   const STORAGE_KEY = "andrin-homeoffice:v2";
+  const baseTasks = window.HOME_TASKS || [];
 
-  const tasks = window.HOME_TASKS || [];
+  const emptyFeedback = () => ({
+    feelingText: "",
+    goodText: "",
+    hardText: "",
+    nextText: "",
+    feelings: []
+  });
 
   const defaults = () => ({
     startedAt: null,
@@ -14,7 +21,14 @@
     completed: [],
     xpTotal: 0,
     dayXp: 0,
-    feedback: { feelingText: "", goodText: "", hardText: "", nextText: "", feelings: [] }
+    customTasks: [],
+    customDraft: {
+      title: "",
+      duration: "",
+      type: "focus",
+      repeatable: true
+    },
+    feedback: emptyFeedback()
   });
 
   let state = loadState();
@@ -23,24 +37,92 @@
 
   const $ = id => document.getElementById(id);
   const els = {
-    startScreen: $("startScreen"), randomScreen: $("randomScreen"), finalScreen: $("finalScreen"),
-    startBtn: $("startBtn"), rollBtn: $("rollBtn"), finishBtn: $("finishBtn"), resetBtn: $("resetBtn"),
-    cube: $("cube"), cubeShadow: $("cubeShadow"), rollLabel: $("rollLabel"), dicePanel: $("dicePanel"),
-    taskCard: $("taskCard"), taskIcon: $("taskIcon"), taskTitle: $("taskTitle"), taskTime: $("taskTime"), taskCategory: $("taskCategory"), taskBody: $("taskBody"),
-    taskTimer: $("taskTimer"), taskXpPreview: $("taskXpPreview"), taskStartBtn: $("taskStartBtn"), taskFinishZone: $("taskFinishZone"), finishToggle: $("finishToggle"), finishToggleText: $("finishToggleText"), completeTaskBtn: $("completeTaskBtn"),
-    timer: $("timer"), timerSub: $("timerSub"), statusPill: $("statusPill"), history: $("history"), weightText: $("weightText"), weightBar: $("weightBar"), bonusText: $("bonusText"),
-    xpTotal: $("xpTotal"), dayXp: $("dayXp"), headerXp: $("headerXp"),
-    finalStart: $("finalStart"), finalEnd: $("finalEnd"), finalDuration: $("finalDuration"), finalTasks: $("finalTasks"), finalXp: $("finalXp"), startTimePreview: $("startTimePreview"),
-    feelingText: $("feelingText"), goodText: $("goodText"), hardText: $("hardText"), nextText: $("nextText"), feelings: $("feelings")
+    startScreen: $("startScreen"),
+    randomScreen: $("randomScreen"),
+    finalScreen: $("finalScreen"),
+    startBtn: $("startBtn"),
+    rollBtn: $("rollBtn"),
+    finishBtn: $("finishBtn"),
+    resetBtn: $("resetBtn"),
+    cube: $("cube"),
+    cubeShadow: $("cubeShadow"),
+    rollLabel: $("rollLabel"),
+    dicePanel: $("dicePanel"),
+    taskCard: $("taskCard"),
+    taskIcon: $("taskIcon"),
+    taskTitle: $("taskTitle"),
+    taskTime: $("taskTime"),
+    taskCategory: $("taskCategory"),
+    taskBody: $("taskBody"),
+    taskTimer: $("taskTimer"),
+    taskXpPreview: $("taskXpPreview"),
+    taskStartBtn: $("taskStartBtn"),
+    taskFinishZone: $("taskFinishZone"),
+    finishToggle: $("finishToggle"),
+    finishToggleText: $("finishToggleText"),
+    completeTaskBtn: $("completeTaskBtn"),
+    timer: $("timer"),
+    timerSub: $("timerSub"),
+    statusPill: $("statusPill"),
+    history: $("history"),
+    weightText: $("weightText"),
+    weightBar: $("weightBar"),
+    bonusText: $("bonusText"),
+    xpTotal: $("xpTotal"),
+    dayXp: $("dayXp"),
+    headerXp: $("headerXp"),
+    finalStart: $("finalStart"),
+    finalEnd: $("finalEnd"),
+    finalDuration: $("finalDuration"),
+    finalTasks: $("finalTasks"),
+    finalXp: $("finalXp"),
+    startTimePreview: $("startTimePreview"),
+    feelingText: $("feelingText"),
+    goodText: $("goodText"),
+    hardText: $("hardText"),
+    nextText: $("nextText"),
+    feelings: $("feelings"),
+    customTaskForm: $("customTaskForm"),
+    customTitle: $("customTitle"),
+    customDuration: $("customDuration"),
+    customType: $("customType"),
+    repeatHelp: $("repeatHelp"),
+    customCount: $("customCount"),
+    customTaskList: $("customTaskList")
   };
+
+  function normalizeCustomTask(task) {
+    return {
+      id: String(task.id || `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
+      icon: task.icon || "🧩",
+      title: String(task.title || "Custom Quest"),
+      time: task.duration ? `${Number(task.duration)} Minuten` : "ohne Zeitvorgabe",
+      duration: task.duration ? Number(task.duration) : null,
+      type: task.type === "light" ? "light" : "focus",
+      repeatable: task.repeatable !== false,
+      custom: true,
+      body: `<p>Deine eigene Quest.</p>${task.duration ? `<div class="hint">Geplante Dauer: ${Number(task.duration)} Minuten.</div>` : `<div class="hint">Keine feste Dauer. Entscheide selbst, wann die Aufgabe fertig ist.</div>`}`
+    };
+  }
+
+  function allTasks() {
+    return [...baseTasks, ...state.customTasks.map(normalizeCustomTask)];
+  }
 
   function loadState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return defaults();
       const parsed = JSON.parse(raw);
-      const next = { ...defaults(), ...parsed, feedback: { ...defaults().feedback, ...(parsed.feedback || {}) } };
-      if (next.currentTaskId && !tasks.some(t => t.id === next.currentTaskId)) {
+      const next = {
+        ...defaults(),
+        ...parsed,
+        customTasks: Array.isArray(parsed.customTasks) ? parsed.customTasks : [],
+        customDraft: { ...defaults().customDraft, ...(parsed.customDraft || {}) },
+        feedback: { ...emptyFeedback(), ...(parsed.feedback || {}) }
+      };
+      const available = [...baseTasks, ...next.customTasks.map(normalizeCustomTask)];
+      if (next.currentTaskId !== null && !available.some(t => String(t.id) === String(next.currentTaskId))) {
         next.currentTaskId = null;
         next.taskStartedAt = null;
         next.taskFinishedToggle = false;
@@ -77,7 +159,7 @@
   }
 
   function currentTask() {
-    return tasks.find(t => t.id === state.currentTaskId) || null;
+    return allTasks().find(t => String(t.id) === String(state.currentTaskId)) || null;
   }
 
   function taskElapsed() {
@@ -154,10 +236,16 @@
 
   function chooseWeightedTask() {
     const bonus = currentLightBonus();
-    const pool = tasks.filter(t => t.id !== state.currentTaskId);
-    const weighted = pool.map(task => ({ task, weight: task.type === "light" ? 1 + bonus : 1 }));
+    const pool = allTasks().filter(t => String(t.id) !== String(state.currentTaskId));
+    if (!pool.length) return null;
+
+    const weighted = pool.map(task => ({
+      task,
+      weight: task.type === "light" ? 1 + bonus : 1
+    }));
     const total = weighted.reduce((sum, item) => sum + item.weight, 0);
     let r = Math.random() * total;
+
     for (const item of weighted) {
       r -= item.weight;
       if (r <= 0) return item.task;
@@ -175,9 +263,13 @@
     }
 
     els.taskIcon.textContent = task.icon;
-    els.taskTitle.textContent = `Quest ${task.id} · ${task.title}`;
+    els.taskTitle.textContent = task.custom ? `Custom · ${task.title}` : `Quest ${task.id} · ${task.title}`;
     els.taskTime.textContent = `Empfohlene Zeit: ${task.time}`;
-    els.taskCategory.textContent = task.type === "light" ? "Lightweight · +10 XP" : "Work / Creative · bis +50 XP";
+    const repeatLabel = task.custom ? (task.repeatable ? " · wiederholbar" : " · nur heute") : "";
+    els.taskCategory.textContent =
+      task.type === "light"
+        ? `Lightweight · +10 XP${repeatLabel}`
+        : `Work / Creative · bis +50 XP${repeatLabel}`;
     els.taskCategory.classList.toggle("focus", task.type === "focus");
     els.taskBody.innerHTML = task.body;
     els.taskCard.classList.remove("hidden");
@@ -209,7 +301,7 @@
       <li>
         <span class="n">${i + 1}</span>
         <span class="history-main">
-          <span>${item.icon} ${item.title}<br><span class="history-meta">${fmtShortDuration(item.durationMs)}</span></span>
+          <span>${item.icon} ${escapeHtml(item.title)}<br><span class="history-meta">${fmtShortDuration(item.durationMs)}</span></span>
           <span class="history-xp">+${item.xp} XP</span>
         </span>
       </li>`).join("");
@@ -220,17 +312,57 @@
     els.goodText.value = state.feedback.goodText || "";
     els.hardText.value = state.feedback.hardText || "";
     els.nextText.value = state.feedback.nextText || "";
-    [...els.feelings.querySelectorAll(".feel")].forEach(btn => btn.classList.toggle("selected", state.feedback.feelings.includes(btn.textContent.trim())));
+    [...els.feelings.querySelectorAll(".feel")].forEach(btn => {
+      btn.classList.toggle("selected", state.feedback.feelings.includes(btn.textContent.trim()));
+    });
   }
 
   function renderFinal() {
     els.finalStart.textContent = fmtClock(state.startedAt);
     els.finalEnd.textContent = fmtClock(state.endedAt);
-    els.finalDuration.textContent = state.startedAt && state.endedAt ? fmtDuration(state.endedAt - state.startedAt) : "–";
+    els.finalDuration.textContent =
+      state.startedAt && state.endedAt ? fmtDuration(state.endedAt - state.startedAt) : "–";
     els.finalTasks.innerHTML = state.completed.length
-      ? state.completed.map((t, i) => `${i + 1}. ${t.icon} ${t.title} · ${fmtShortDuration(t.durationMs)} · <b>+${t.xp} XP</b>`).join("<br>")
+      ? state.completed.map((t, i) =>
+          `${i + 1}. ${t.icon} ${escapeHtml(t.title)} · ${fmtShortDuration(t.durationMs)} · <b>+${t.xp} XP</b>`
+        ).join("<br>")
       : "Keine Random-Tasks abgeschlossen.";
     renderFeedback();
+  }
+
+  function renderCustomDraft() {
+    const draft = state.customDraft || defaults().customDraft;
+    els.customTitle.value = draft.title || "";
+    els.customDuration.value = draft.duration || "";
+    els.customType.value = draft.type === "light" ? "light" : "focus";
+    setRepeatChoice(draft.repeatable !== false, false);
+  }
+
+  function renderCustomList() {
+    const list = state.customTasks || [];
+    els.customCount.textContent = list.length;
+    if (!list.length) {
+      els.customTaskList.innerHTML = `<div class="tiny">Noch keine Custom Quests.</div>`;
+      return;
+    }
+
+    els.customTaskList.innerHTML = list.map(raw => {
+      const task = normalizeCustomTask(raw);
+      const meta = [
+        task.type === "light" ? "Lightweight" : "Work / Creative",
+        task.duration ? `${task.duration} Min.` : "ohne Dauer",
+        task.repeatable ? "dauerhaft" : "nur heute"
+      ].join(" · ");
+      const running = String(state.currentTaskId) === String(task.id);
+      return `
+        <div class="custom-task-row">
+          <div class="custom-task-info">
+            <strong>🧩 ${escapeHtml(task.title)}</strong>
+            <span>${meta}</span>
+          </div>
+          <button class="custom-delete" type="button" data-delete-custom="${escapeHtml(task.id)}" ${running ? "disabled" : ""} aria-label="${escapeHtml(task.title)} löschen">×</button>
+        </div>`;
+    }).join("");
   }
 
   function renderAll() {
@@ -243,11 +375,14 @@
     renderHistory();
     renderTask();
     renderFinal();
+    renderCustomDraft();
+    renderCustomList();
     tick();
   }
 
   function startDay() {
     if (state.startedAt && !state.endedAt) return;
+    state.customTasks = state.customTasks.filter(t => t.repeatable !== false);
     state.startedAt = Date.now();
     state.endedAt = null;
     state.screen = "random";
@@ -257,13 +392,16 @@
     state.lastCompletedType = null;
     state.completed = [];
     state.dayXp = 0;
-    state.feedback = defaults().feedback;
+    state.feedback = emptyFeedback();
     saveState();
     renderAll();
   }
 
   function roll() {
-    if (rolling || !state.startedAt || state.endedAt || state.currentTaskId) return;
+    if (rolling || !state.startedAt || state.endedAt || state.currentTaskId !== null) return;
+    const chosen = chooseWeightedTask();
+    if (!chosen) return;
+
     rolling = true;
     els.rollBtn.disabled = true;
     els.rollLabel.textContent = "Der Würfel entscheidet …";
@@ -272,7 +410,6 @@
     els.cube.classList.add("rolling");
     els.cubeShadow.style.transform = "translateY(148px) scale(.72)";
     els.cubeShadow.style.opacity = ".55";
-    const chosen = chooseWeightedTask();
 
     setTimeout(() => {
       state.currentTaskId = chosen.id;
@@ -284,6 +421,7 @@
       rolling = false;
       saveState();
       renderTask();
+      renderCustomList();
     }, 1750);
   }
 
@@ -299,12 +437,29 @@
   function completeTask() {
     const task = currentTask();
     if (!task || !state.taskStartedAt || !state.taskFinishedToggle) return;
+
     const durationMs = Math.max(1000, Date.now() - state.taskStartedAt);
     const xp = xpForTask(task, durationMs);
-    state.completed.push({ id: task.id, title: task.title, icon: task.icon, type: task.type, durationMs, xp, completedAt: Date.now() });
+
+    state.completed.push({
+      id: task.id,
+      title: task.title,
+      icon: task.icon,
+      type: task.type,
+      custom: Boolean(task.custom),
+      durationMs,
+      xp,
+      completedAt: Date.now()
+    });
+
     state.xpTotal += xp;
     state.dayXp += xp;
     state.lastCompletedType = task.type;
+
+    if (task.custom && !task.repeatable) {
+      state.customTasks = state.customTasks.filter(t => String(t.id) !== String(task.id));
+    }
+
     state.currentTaskId = null;
     state.taskStartedAt = null;
     state.taskFinishedToggle = false;
@@ -313,13 +468,14 @@
     els.rollLabel.textContent = `Quest abgeschlossen · +${xp} XP. Bereit für den nächsten Wurf?`;
     renderTask();
     renderHistory();
+    renderCustomList();
     updateBalance();
     updateXp();
   }
 
   function finishDay() {
     if (!state.startedAt || state.endedAt) return;
-    if (state.currentTaskId) {
+    if (state.currentTaskId !== null) {
       const ok = window.confirm("Der aktuelle Task ist noch nicht abgeschlossen. Homeoffice trotzdem beenden? Für diesen Task gibt es dann keine XP.");
       if (!ok) return;
       state.currentTaskId = null;
@@ -336,9 +492,13 @@
 
   function resetDay() {
     const lifetimeXp = state.xpTotal;
+    const repeatableCustom = state.customTasks.filter(t => t.repeatable !== false);
+    const draft = { ...state.customDraft };
     state = defaults();
     state.xpTotal = lifetimeXp;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    state.customTasks = repeatableCustom;
+    state.customDraft = draft;
+    saveState();
     renderAll();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -352,6 +512,76 @@
     saveState();
   }
 
+  function setRepeatChoice(repeatable, persist = true) {
+    state.customDraft.repeatable = Boolean(repeatable);
+    document.querySelectorAll(".repeat-option").forEach(btn => {
+      btn.classList.toggle("active", (btn.dataset.repeat === "yes") === state.customDraft.repeatable);
+    });
+    els.repeatHelp.textContent = state.customDraft.repeatable
+      ? "Bleibt auch nach dem Abschluss und an neuen Tagen im Random-Pool."
+      : "Bleibt heute im Random-Pool, bis die Quest erledigt ist. Danach wird sie entfernt.";
+    if (persist) saveState();
+  }
+
+  function saveCustomDraftFromInputs() {
+    state.customDraft.title = els.customTitle.value;
+    state.customDraft.duration = els.customDuration.value;
+    state.customDraft.type = els.customType.value === "light" ? "light" : "focus";
+    saveState();
+  }
+
+  function addCustomTask(event) {
+    event.preventDefault();
+    const title = els.customTitle.value.trim();
+    if (!title) {
+      els.customTitle.focus();
+      return;
+    }
+
+    const durationRaw = els.customDuration.value.trim();
+    const duration = durationRaw ? Math.max(1, Math.min(480, Number(durationRaw))) : null;
+    const repeatable = state.customDraft.repeatable !== false;
+
+    state.customTasks.push({
+      id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      title,
+      duration,
+      type: els.customType.value === "light" ? "light" : "focus",
+      repeatable,
+      createdAt: Date.now()
+    });
+
+    state.customDraft = {
+      title: "",
+      duration: "",
+      type: els.customType.value === "light" ? "light" : "focus",
+      repeatable
+    };
+
+    saveState();
+    renderCustomDraft();
+    renderCustomList();
+  }
+
+  function deleteCustomTask(id) {
+    if (String(state.currentTaskId) === String(id)) {
+      window.alert("Die laufende Quest kann nicht gelöscht werden.");
+      return;
+    }
+    state.customTasks = state.customTasks.filter(t => String(t.id) !== String(id));
+    saveState();
+    renderCustomList();
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
   els.startBtn.addEventListener("click", startDay);
   els.rollBtn.addEventListener("click", roll);
   els.taskStartBtn.addEventListener("click", startTask);
@@ -360,17 +590,30 @@
   els.finishBtn.addEventListener("click", finishDay);
   els.resetBtn.addEventListener("click", resetDay);
 
-  els.feelings.addEventListener("click", e => {
-    const btn = e.target.closest(".feel");
+  els.feelings.addEventListener("click", event => {
+    const btn = event.target.closest(".feel");
     if (!btn) return;
     btn.classList.toggle("selected");
     saveFeedback();
   });
 
-  [els.feelingText, els.goodText, els.hardText, els.nextText].forEach(input => input.addEventListener("input", saveFeedback));
+  [els.feelingText, els.goodText, els.hardText, els.nextText].forEach(input => {
+    input.addEventListener("input", saveFeedback);
+  });
 
-  window.addEventListener("beforeunload", saveState);
-  document.addEventListener("visibilitychange", () => { if (document.hidden) saveState(); });
+  els.customTaskForm.addEventListener("submit", addCustomTask);
+  [els.customTitle, els.customDuration].forEach(input => input.addEventListener("input", saveCustomDraftFromInputs));
+  els.customType.addEventListener("change", saveCustomDraftFromInputs);
+
+  document.querySelectorAll(".repeat-option").forEach(btn => {
+    btn.addEventListener("click", () => setRepeatChoice(btn.dataset.repeat === "yes"));
+  });
+
+  els.customTaskList.addEventListener("click", event => {
+    const btn = event.target.closest("[data-delete-custom]");
+    if (!btn || btn.disabled) return;
+    deleteCustomTask(btn.dataset.deleteCustom);
+  });
 
   renderAll();
   startTicker();

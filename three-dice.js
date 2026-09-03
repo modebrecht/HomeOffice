@@ -2,18 +2,126 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-const host = document.getElementById('diceCanvasHost');
-const fallback = document.getElementById('diceFallback');
-
+const stage = document.querySelector('.cube-area');
+const rollButton = document.getElementById('rollBtn');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-if (!host) {
-  window.homeDice = { roll: () => delay(1750), ready: false };
+if (!stage) {
+  window.homeDice = { roll: () => delay(1700), ready: false };
 } else {
+  stage.classList.add('three-dice-stage');
+  stage.innerHTML = `
+    <div class="dice-stage-aura" aria-hidden="true"></div>
+    <div class="dice-canvas-host" id="diceCanvasHost"></div>
+    <div class="dice-fallback" id="diceFallback" hidden aria-hidden="true">🎲</div>
+    <div class="dice-stage-floor" aria-hidden="true"></div>
+  `;
+
+  if (!document.getElementById('threeDiceStyles')) {
+    const style = document.createElement('style');
+    style.id = 'threeDiceStyles';
+    style.textContent = `
+      .three-dice-stage{
+        position:relative!important;
+        isolation:isolate;
+        width:100%;
+        min-height:278px!important;
+        margin:4px 0 8px!important;
+        overflow:hidden;
+        border-radius:24px;
+        perspective:none!important;
+        background:
+          radial-gradient(circle at 50% 34%,rgba(142,162,255,.16),transparent 32%),
+          radial-gradient(circle at 50% 92%,rgba(112,225,200,.12),transparent 34%),
+          linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.008));
+        border:1px solid rgba(255,255,255,.055);
+      }
+      .three-dice-stage::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        z-index:0;
+        pointer-events:none;
+        background:linear-gradient(180deg,rgba(255,255,255,.04),transparent 34%);
+      }
+      .dice-stage-aura{
+        position:absolute;
+        left:50%;
+        top:50%;
+        width:min(78vw,390px);
+        aspect-ratio:1;
+        transform:translate(-50%,-48%);
+        border-radius:50%;
+        z-index:0;
+        pointer-events:none;
+        background:radial-gradient(circle,rgba(124,151,255,.14),rgba(112,225,200,.045) 44%,transparent 68%);
+        filter:blur(8px);
+      }
+      .dice-canvas-host{
+        position:absolute;
+        inset:0;
+        z-index:2;
+        width:100%;
+        height:100%;
+      }
+      .dice-webgl-canvas{
+        display:block;
+        width:100%!important;
+        height:100%!important;
+        touch-action:manipulation;
+      }
+      .dice-stage-floor{
+        position:absolute;
+        z-index:1;
+        left:22%;
+        right:22%;
+        bottom:12%;
+        height:16%;
+        border-radius:50%;
+        pointer-events:none;
+        background:radial-gradient(ellipse,rgba(0,0,0,.25),transparent 68%);
+        filter:blur(12px);
+        opacity:.7;
+      }
+      .dice-fallback{
+        position:absolute;
+        z-index:3;
+        inset:0;
+        display:grid;
+        place-items:center;
+        font-size:7rem;
+        filter:drop-shadow(0 25px 22px rgba(0,0,0,.35));
+      }
+      .dice-fallback[hidden]{display:none!important}
+      .dice-fallback.rolling{animation:premiumDiceFallback 1.45s cubic-bezier(.18,.8,.2,1)}
+      @keyframes premiumDiceFallback{
+        0%{transform:translateY(0) rotate(0) scale(1)}
+        35%{transform:translateY(-46px) rotate(390deg) scale(1.08)}
+        72%{transform:translateY(-12px) rotate(760deg) scale(.97)}
+        88%{transform:translateY(3px) rotate(820deg) scale(1.04,.94)}
+        100%{transform:none}
+      }
+      @media(max-width:450px){
+        .three-dice-stage{min-height:250px!important;border-radius:19px}
+      }
+      @media(min-width:861px){
+        .three-dice-stage{min-height:352px!important;margin:8px 0 12px!important;border-radius:28px}
+      }
+      @media(prefers-reduced-motion:reduce){
+        .dice-fallback.rolling{animation-duration:.45s}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  const host = document.getElementById('diceCanvasHost');
+  const fallback = document.getElementById('diceFallback');
+
   try {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
-    camera.position.set(4.8, 3.5, 7.1);
+    const CAMERA_HOME = new THREE.Vector3(4.8, 3.5, 7.1);
+    camera.position.copy(CAMERA_HOME);
     camera.lookAt(0, 0.15, 0);
 
     const renderer = new THREE.WebGLRenderer({
@@ -39,8 +147,7 @@ if (!host) {
     room.dispose();
     pmrem.dispose();
 
-    const hemi = new THREE.HemisphereLight(0xc8d8ff, 0x121629, 1.45);
-    scene.add(hemi);
+    scene.add(new THREE.HemisphereLight(0xc8d8ff, 0x121629, 1.45));
 
     const key = new THREE.DirectionalLight(0xffffff, 3.6);
     key.position.set(4.5, 7, 5.5);
@@ -177,7 +284,6 @@ if (!host) {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let rolling = false;
     let visible = true;
-    let lastIdleTime = 0;
 
     const tempQuaternion = new THREE.Quaternion();
     const progressQuaternion = new THREE.Quaternion();
@@ -221,7 +327,6 @@ if (!host) {
       if (!visible || document.hidden) return;
 
       if (!rolling) {
-        lastIdleTime = time;
         presentation.position.y = BASE_Y + Math.sin(time * 0.0017) * 0.035;
         presentation.rotation.y = Math.sin(time * 0.00105) * 0.035;
         presentation.rotation.x = Math.sin(time * 0.0013) * 0.012;
@@ -238,7 +343,7 @@ if (!host) {
       const value = Number.isInteger(result) && result >= 1 && result <= 6
         ? result
         : 1 + Math.floor(Math.random() * 6);
-      const duration = reducedMotion ? 520 : 1900;
+      const duration = reducedMotion ? 460 : 1680;
       const startTime = performance.now();
       const startQuaternion = die.quaternion.clone();
       const targetQuaternion = targetQuaternionFor(value);
@@ -267,7 +372,7 @@ if (!host) {
           let height;
           if (p < 0.78) {
             const flight = p / 0.78;
-            height = Math.sin(Math.PI * flight) * (reducedMotion ? 0.55 : 2.05);
+            height = Math.sin(Math.PI * flight) * (reducedMotion ? 0.52 : 2.05);
           } else {
             const settle = (p - 0.78) / 0.22;
             height = Math.abs(Math.sin(settle * Math.PI * 2.15)) * 0.28 * (1 - settle);
@@ -284,8 +389,8 @@ if (!host) {
           glow.material.opacity = 0.48 + (1 - Math.min(height / 2, 1)) * 0.25;
 
           const shake = reducedMotion ? 0 : impact * 0.025;
-          camera.position.x = 4.8 + Math.sin(now * 0.09) * shake;
-          camera.position.y = 3.5 + Math.cos(now * 0.075) * shake;
+          camera.position.x = CAMERA_HOME.x + Math.sin(now * 0.09) * shake;
+          camera.position.y = CAMERA_HOME.y + Math.cos(now * 0.075) * shake;
           camera.lookAt(0, 0.15, 0);
 
           if (p < 1) {
@@ -294,7 +399,7 @@ if (!host) {
             die.quaternion.copy(targetQuaternion);
             presentation.position.set(0, BASE_Y, 0);
             presentation.scale.set(1, 1, 1);
-            camera.position.set(4.8, 3.5, 7.1);
+            camera.position.copy(CAMERA_HOME);
             camera.lookAt(0, 0.15, 0);
             rolling = false;
             if (navigator.vibrate && !reducedMotion) navigator.vibrate(12);
@@ -307,26 +412,29 @@ if (!host) {
       return value;
     }
 
-    window.homeDice = {
-      ready: true,
-      roll
-    };
-
+    window.homeDice = { ready: true, roll };
     host.classList.add('is-ready');
-    if (fallback) fallback.hidden = true;
+    fallback.hidden = true;
+
+    if (rollButton) {
+      rollButton.addEventListener('click', () => {
+        if (!rolling) roll();
+      });
+    }
   } catch (error) {
     console.warn('Three.js dice unavailable, using fallback:', error);
     host.classList.add('has-fallback');
-    if (fallback) fallback.hidden = false;
-    window.homeDice = {
-      ready: false,
-      roll: async () => {
-        fallback?.classList.remove('rolling');
-        void fallback?.offsetWidth;
-        fallback?.classList.add('rolling');
-        await delay(1450);
-        fallback?.classList.remove('rolling');
-      }
-    };
+    fallback.hidden = false;
+
+    async function fallbackRoll() {
+      fallback.classList.remove('rolling');
+      void fallback.offsetWidth;
+      fallback.classList.add('rolling');
+      await delay(1450);
+      fallback.classList.remove('rolling');
+    }
+
+    window.homeDice = { ready: false, roll: fallbackRoll };
+    rollButton?.addEventListener('click', fallbackRoll);
   }
 }

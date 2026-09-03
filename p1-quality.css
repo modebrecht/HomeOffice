@@ -1,0 +1,20 @@
+/* P1 quality pass */
+.task-card.task-reveal{
+  animation:p1TaskReveal .62s cubic-bezier(.16,.84,.2,1) both;
+  transform-origin:50% 0;
+}
+
+@keyframes p1TaskReveal{
+  0%{opacity:0;transform:translateY(18px) scale(.982);filter:blur(4px)}
+  58%{opacity:1;transform:translateY(-2px) scale(1.008);filter:blur(0)}
+  100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+
+#dicePanel{
+  transition:opacity .22s ease,transform .22s ease;
+}
+
+@media(prefers-reduced-motion:reduce){
+  .task-card.task-reveal{animation:p1TaskRevealReduced .16s ease-out both}
+  @keyframes p1TaskRevealReduced{from{opacity:0}to{opacity:1}}
+}

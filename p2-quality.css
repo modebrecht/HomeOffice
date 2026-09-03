@@ -1,0 +1,57 @@
+/* P2 — daily insight and history usability */
+.p2-final-summary{
+  margin:12px 0 16px;
+  padding:14px;
+  border:1px solid rgba(112,225,200,.15);
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 92% 0%,rgba(142,162,255,.12),transparent 38%),
+    linear-gradient(180deg,rgba(112,225,200,.07),rgba(255,255,255,.035));
+  box-shadow:0 14px 38px rgba(0,0,0,.14);
+}
+.p2-summary-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.p2-summary-top span{display:block;color:var(--muted);font-size:.62rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.p2-summary-top strong{display:block;margin-top:3px;font-size:1rem;letter-spacing:-.02em}
+.p2-copy-btn{
+  flex:0 0 auto;min-height:32px!important;height:auto!important;padding:6px 9px!important;
+  border-radius:9px!important;border:1px solid rgba(255,255,255,.1)!important;
+  background:rgba(255,255,255,.055)!important;color:#e9edff!important;font-size:.66rem!important;font-weight:900!important;
+}
+.p2-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.p2-summary-metric{min-width:0;padding:8px;border-radius:11px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.055)}
+.p2-summary-metric span{display:block;font-size:.54rem;color:var(--muted);text-transform:uppercase;letter-spacing:.055em}
+.p2-summary-metric strong{display:block;margin-top:3px;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p2-summary-feelings{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.p2-summary-feelings span{padding:5px 7px;border-radius:999px;background:rgba(142,162,255,.1);border:1px solid rgba(142,162,255,.15);font-size:.64rem}
+.p2-summary-note{margin:9px 0 0;padding-top:8px;border-top:1px solid rgba(255,255,255,.07);font-size:.7rem;color:#dce3f8;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+.p2-summary-ready #finalScreen>.final-grid,.p2-summary-ready #finalScreen>.final-xp{display:none}
+
+.p2-insights{display:grid;gap:7px}
+.p2-streak{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border-radius:11px;
+  background:linear-gradient(90deg,rgba(255,213,143,.07),rgba(142,162,255,.05));border:1px solid rgba(255,213,143,.1)
+}
+.p2-streak strong{font-size:.72rem}.p2-streak small{color:var(--muted);font-size:.6rem}
+.p2-best-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.p2-best-item{min-width:0;padding:7px;border-radius:9px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.055)}
+.p2-best-item span{display:block;color:var(--muted);font-size:.52rem;text-transform:uppercase;letter-spacing:.045em}
+.p2-best-item strong{display:block;margin-top:3px;font-size:.66rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.p2-history-controls{display:grid;gap:6px;padding:8px;border-radius:11px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055)}
+.p2-filter-row{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.p2-filter-btn{min-height:30px!important;padding:5px 7px!important;border-radius:8px!important;border:1px solid rgba(255,255,255,.08)!important;background:rgba(255,255,255,.035)!important;color:var(--muted)!important;font-size:.63rem!important;font-weight:850!important}
+.p2-filter-btn.active{background:rgba(142,162,255,.12)!important;border-color:rgba(142,162,255,.25)!important;color:#f4f6ff!important}
+.p2-search-row{display:flex;align-items:center;gap:6px}
+.p2-search-row input{min-width:0;flex:1;min-height:32px;padding:7px 9px;border-radius:9px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);color:#f5f7ff;outline:none;font-size:.68rem}
+.p2-search-row input:focus{border-color:rgba(142,162,255,.3);box-shadow:0 0 0 2px rgba(142,162,255,.06)}
+.p2-result-count{flex:0 0 auto;color:var(--muted);font-size:.58rem;white-space:nowrap}
+.p2-filter-empty{display:none;padding:10px;text-align:center;color:var(--muted);font-size:.68rem}
+.p2-filter-empty.visible{display:block}
+.p2-archive-copy{display:flex;justify-content:flex-end;margin-top:8px}
+.p2-archive-copy .p2-copy-btn{font-size:.6rem!important;min-height:28px!important;padding:5px 7px!important}
+
+@media(max-width:520px){
+  .p2-summary-grid{grid-template-columns:1fr 1fr}
+  .p2-summary-top{align-items:center}
+  .p2-best-grid{grid-template-columns:1fr}
+}

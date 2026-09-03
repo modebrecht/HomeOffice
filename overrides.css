@@ -8,7 +8,7 @@
 .status,.xp-chip{min-height:36px;display:inline-flex;align-items:center;padding:8px 11px;border-radius:999px;font-size:.78rem}
 .xp-chip{background:rgba(255,201,120,.12);border:1px solid rgba(255,201,120,.26);color:#ffe0ad;backdrop-filter:blur(14px)}
 
-.layout{display:grid;grid-template-columns:1fr;gap:12px;align-items:start}
+.layout{display:grid;grid-template-columns:1fr;gap:10px;align-items:start}
 .card{border-radius:20px;box-shadow:0 14px 38px rgba(0,0,0,.24)}
 .stage{min-height:0;padding:17px;overflow:clip}
 .stage h2{font-size:clamp(1.8rem,9vw,2.45rem);margin-bottom:8px}
@@ -64,7 +64,7 @@
 .complete-task{background:linear-gradient(135deg,#70e1c8,#7ab4ff);box-shadow:0 14px 32px rgba(112,225,200,.22);font-weight:900;color:#081224}
 
 .side{display:grid;grid-template-columns:1fr;gap:10px}
-.side .card{padding:14px}
+.side .card{padding:14px;box-shadow:0 8px 22px rgba(0,0,0,.17)}
 .side h3{margin:0 0 10px;font-size:.95rem}
 .sidequest-sticky{position:relative!important;top:auto!important;grid-column:1/-1;margin:0!important;padding:0!important}
 .status-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -79,7 +79,8 @@
 .panel-details{margin:0}
 .panel-details>summary{list-style:none}
 .panel-details>summary::-webkit-details-marker{display:none}
-.panel-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;cursor:pointer;user-select:none;border-radius:14px;outline:none}
+.panel-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:0 2px;cursor:pointer;user-select:none;border-radius:14px;outline:none}
+.panel-summary:hover{background:rgba(255,255,255,.025)}
 .panel-summary:focus-visible{box-shadow:0 0 0 3px rgba(142,162,255,.18)}
 .summary-copy{display:flex;min-width:0;flex:1;flex-direction:column;gap:3px}
 .summary-copy strong{font-size:.92rem;line-height:1.2}
@@ -132,12 +133,25 @@
 .history .history-xp{color:#ffe0ad;font-weight:900;white-space:nowrap;font-size:.78rem}
 .finish-body p{margin:0 0 10px}
 .finish-summary .summary-copy strong{color:#ffd8de}
+.finish-details[open]{background:rgba(255,141,156,.025);border-radius:14px}
 .final-xp{padding:12px 13px;border-radius:14px;background:rgba(255,201,120,.10);border:1px solid rgba(255,201,120,.22);color:#ffe0ad;margin:0 0 16px}
 .final-actions{margin-top:16px}
 .feeling-grid{gap:6px}
 .feel{min-height:38px;padding:7px 10px;font-size:.78rem}
 textarea{min-height:84px}
 .hidden{display:none!important}
+
+/* On phones/tablets, quick status comes before the main task; secondary controls follow it. */
+@media(max-width:860px){
+  .side{display:contents}
+  .sidequest-sticky{order:1}
+  .status-grid{order:2}
+  .stage{order:3}
+  .custom-card{order:4}
+  .info-card{order:5}
+  .history-card{order:6}
+  .finish-card{order:7}
+}
 
 @media(max-width:450px){
   .sidequest-sticky{top:auto!important;margin:0!important}
@@ -155,6 +169,8 @@ textarea{min-height:84px}
   .water-segment{min-width:5px!important;height:6px!important}
   .sq-xp{display:none!important}
   .meds-toggle{min-height:28px!important;padding:5px 6px!important;font-size:.62rem!important;gap:5px!important}
+  .panel-summary{min-height:46px}
+  .summary-copy small{font-size:.68rem}
 }
 
 @media(min-width:560px){
@@ -200,7 +216,7 @@ textarea{min-height:84px}
   .task-runner{grid-template-columns:1fr auto;padding:14px 16px;margin:14px 0 18px;border-radius:18px}
   .task-runner-label,.task-xp-live span{font-size:.76rem}
   .task-runner strong{font-size:1.35rem}
-  .side{grid-template-columns:1fr;gap:14px}
+  .side{display:grid;grid-template-columns:1fr;gap:14px}
   .side .card{padding:18px}
   .sidequest-sticky{grid-column:auto}
   .status-grid{grid-column:auto;grid-template-columns:1fr 1fr;gap:10px}

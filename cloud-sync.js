@@ -145,10 +145,13 @@
   async function pushLocal() {
     if (!getToken() || syncing) return;
     syncing = true;
+    let needsRepush = false;
     setStatus('☁️ ↑', 'Speichert…');
 
     try {
-      const { response, data } = await request('POST', snapshot());
+      const body = snapshot();
+      const sentLocalAt = Number(body.clientUpdatedAt) || 0;
+      const { response, data } = await request('POST', body);
       if (response.status === 401) {
         localStorage.removeItem(TOKEN_KEY);
         setStatus('☁️ Aus', 'Code ungültig');
@@ -159,18 +162,29 @@
       const remoteMs = Date.parse(data.updatedAt) || Date.now();
       const now = Date.now();
       const meta = getMeta();
+      const latestLocalAt = Number(meta.localUpdatedAt) || 0;
+      const changedDuringPush = latestLocalAt > sentLocalAt;
+
       meta.remoteUpdatedAt = remoteMs;
-      meta.localUpdatedAt = remoteMs;
       meta.lastSyncAt = now;
       meta.conflict = false;
-      saveMeta(meta);
       pendingRemote = null;
-      setStatus('☁️ ✓', fmtSyncTime(now), `Zuletzt gesichert: ${fmtSyncTime(now)}`);
+
+      if (changedDuringPush) {
+        needsRepush = true;
+        saveMeta(meta);
+        setStatus('☁️ •', 'Ungesichert', 'Neue lokale Änderungen werden noch gesichert');
+      } else {
+        meta.localUpdatedAt = remoteMs;
+        saveMeta(meta);
+        setStatus('☁️ ✓', fmtSyncTime(now), `Zuletzt gesichert: ${fmtSyncTime(now)}`);
+      }
     } catch (error) {
       console.warn('Cloud-Sync push failed:', error);
       setStatus('☁️ Offline', 'Nicht gesichert', 'Cloud nicht erreichbar');
     } finally {
       syncing = false;
+      if (needsRepush) schedulePush();
     }
   }
 

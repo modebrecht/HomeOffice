@@ -59,6 +59,27 @@ if (!document.querySelector('script[data-homeoffice-profile]')) {
   document.head.appendChild(profileScript);
 }
 
+if (!document.querySelector('script[data-homeoffice-three-importmap]')) {
+  const importMap = document.createElement('script');
+  importMap.type = 'importmap';
+  importMap.dataset.homeofficeThreeImportmap = 'true';
+  importMap.textContent = JSON.stringify({
+    imports: {
+      three: 'https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js',
+      'three/addons/': 'https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/'
+    }
+  });
+  document.head.appendChild(importMap);
+}
+
+if (!document.querySelector('script[data-homeoffice-three-dice]')) {
+  const diceScript = document.createElement('script');
+  diceScript.type = 'module';
+  diceScript.src = 'three-dice.js';
+  diceScript.dataset.homeofficeThreeDice = 'true';
+  document.head.appendChild(diceScript);
+}
+
 if (!document.querySelector('script[data-homeoffice-sidequests]')) {
   const sideQuestScript = document.createElement('script');
   sideQuestScript.src = 'sidequests.js';

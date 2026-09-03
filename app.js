@@ -18,6 +18,7 @@
     taskStartedAt: null,
     taskFinishedToggle: false,
     lastCompletedType: null,
+    lightBonus: 0.40,
     completed: [],
     xpTotal: 0,
     dayXp: 0,
@@ -68,6 +69,8 @@
     weightText: $("weightText"),
     weightBar: $("weightBar"),
     bonusText: $("bonusText"),
+    lightBonusRange: $("lightBonusRange"),
+    lightBonusSettingText: $("lightBonusSettingText"),
     xpTotal: $("xpTotal"),
     dayXp: $("dayXp"),
     headerXp: $("headerXp"),
@@ -121,6 +124,7 @@
         customDraft: { ...defaults().customDraft, ...(parsed.customDraft || {}) },
         feedback: { ...emptyFeedback(), ...(parsed.feedback || {}) }
       };
+      next.lightBonus = Math.max(0, Math.min(1, Number(next.lightBonus) || 0));
       const available = [...baseTasks, ...next.customTasks.map(normalizeCustomTask)];
       if (next.currentTaskId !== null && !available.some(t => String(t.id) === String(next.currentTaskId))) {
         next.currentTaskId = null;
@@ -181,16 +185,26 @@
   }
 
   function currentLightBonus() {
-    return state.lastCompletedType === "focus" ? 0.40 : 0;
+    return state.lastCompletedType === "focus" ? state.lightBonus : 0;
   }
 
   function updateBalance() {
+    const configured = Math.round(state.lightBonus * 100);
     const bonus = currentLightBonus();
-    els.bonusText.textContent = bonus ? "+40 %" : "0 %";
-    els.weightText.textContent = bonus
-      ? "Der letzte erledigte Task war Arbeit / Creative. Lightweight wird beim nächsten Wurf um 40 % höher gewichtet."
-      : "Normaler Mix aus Focus und Lightweight.";
-    els.weightBar.style.width = bonus ? "72%" : "50%";
+    const active = Math.round(bonus * 100);
+
+    if (els.lightBonusRange) els.lightBonusRange.value = String(configured);
+    if (els.lightBonusSettingText) els.lightBonusSettingText.textContent = `${configured} %`;
+    els.bonusText.textContent = active ? `+${active} %` : "0 %";
+    els.weightText.textContent = `Lightweight-Bonus nach Work / Creative: ${configured} %`;
+    els.weightBar.style.width = `${Math.min(100, 50 + active / 2)}%`;
+  }
+
+  function updateLightBonus() {
+    if (!els.lightBonusRange) return;
+    state.lightBonus = Math.max(0, Math.min(1, Number(els.lightBonusRange.value) / 100));
+    saveState();
+    updateBalance();
   }
 
   function updateXp() {
@@ -493,10 +507,12 @@
     const lifetimeXp = state.xpTotal;
     const repeatableCustom = state.customTasks.filter(t => t.repeatable !== false);
     const draft = { ...state.customDraft };
+    const lightBonus = state.lightBonus;
     state = defaults();
     state.xpTotal = lifetimeXp;
     state.customTasks = repeatableCustom;
     state.customDraft = draft;
+    state.lightBonus = lightBonus;
     saveState();
     renderAll();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -588,6 +604,7 @@
   els.completeTaskBtn.addEventListener("click", completeTask);
   els.finishBtn.addEventListener("click", finishDay);
   els.resetBtn.addEventListener("click", resetDay);
+  if (els.lightBonusRange) els.lightBonusRange.addEventListener("input", updateLightBonus);
 
   els.feelings.addEventListener("click", event => {
     const btn = event.target.closest(".feel");

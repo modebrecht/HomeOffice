@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="overrides.css" />
   <link rel="stylesheet" href="sidebar-polish.css" />
+  <link rel="stylesheet" href="p1-quality.css" />
 </head>
 <body>
   <div class="shell">
@@ -73,7 +74,7 @@
               <div class="task-finish-zone hidden" id="taskFinishZone">
                 <button class="finish-toggle" id="finishToggle" type="button" aria-pressed="false">
                   <span class="toggle-track"><span class="toggle-knob"></span></span>
-                  <span id="finishToggleText">Fertig? AUS</span>
+                  <span id="finishToggleText">Fertig AUS</span>
                 </button>
                 <button class="complete-task hidden" id="completeTaskBtn">✓ Abschliessen</button>
               </div>
@@ -127,9 +128,7 @@
         <section class="card custom-card">
           <details class="panel-details" id="customQuestDetails">
             <summary class="panel-summary">
-              <span class="summary-copy">
-                <strong>➕ Custom Quest hinzufügen</strong>
-              </span>
+              <span class="summary-copy"><strong>➕ Custom Quest hinzufügen</strong></span>
               <span class="summary-chevron" aria-hidden="true">⌄</span>
             </summary>
 
@@ -166,9 +165,7 @@
 
           <div class="custom-list-wrap">
             <div class="custom-list-title">Eigene Quests <span id="customCount">0</span></div>
-            <div id="customTaskList" class="custom-task-list">
-              <div class="tiny">Keine</div>
-            </div>
+            <div id="customTaskList" class="custom-task-list"><div class="tiny">Keine</div></div>
           </div>
         </section>
 
@@ -212,8 +209,7 @@
     </main>
   </div>
 <script src="tasks.js"></script>
-<script src="app.js"></script>
-<script src="ui-copy.js"></script>
+<script src="app-core.js"></script>
 <script src="history.js"></script>
 <script src="task-celebrations-v2.js"></script>
 </body>

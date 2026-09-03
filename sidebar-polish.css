@@ -1,0 +1,70 @@
+/* Compact right-column layout */
+.side .custom-add,
+.side .sidequest-action-btn,
+.side .sidequest-add-form button{
+  min-height:34px!important;
+  height:auto!important;
+  padding:7px 10px!important;
+  border-radius:10px!important;
+  font-size:.72rem!important;
+  line-height:1.1!important;
+}
+
+.side .custom-add{width:auto!important;justify-self:start}
+.side .panel-summary{min-height:42px!important}
+.side .summary-chevron{width:27px;height:27px;border-radius:9px}
+.side .panel-details-body{padding-top:9px;margin-top:6px}
+.side .custom-list-wrap{margin-top:9px;padding-top:9px}
+.side .history-card,.side .custom-card{min-width:0}
+.side .finish-body .danger{min-height:38px!important;padding:8px 11px!important;border-radius:11px!important;font-size:.76rem!important;width:auto!important}
+
+.sidequest-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+.sidequest-action-btn{width:100%!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+@media(min-width:861px){
+  .side{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    gap:10px!important;
+    align-items:start;
+  }
+
+  .sidequest-sticky,
+  .status-grid{
+    grid-column:1 / -1!important;
+  }
+
+  .custom-card,
+  .info-card,
+  .history-card,
+  .finish-card{
+    grid-column:auto!important;
+    width:100%;
+    min-width:0;
+  }
+
+  .side .card{padding:13px!important;border-radius:20px!important}
+  .status-grid{gap:10px}
+  .timer,.xp-total{font-size:1.7rem!important}
+  .stat-card .subtle{font-size:.7rem!important}
+  .side .summary-copy strong{font-size:.82rem!important}
+  .side .summary-copy small{font-size:.67rem!important}
+  .side .history-card h3{font-size:.84rem!important;margin-bottom:8px!important}
+  .side .history{max-height:200px}
+  .side .history li{font-size:.75rem;padding:7px 8px}
+  .side .balance-setting-head label{font-size:.72rem}
+  .side .balance-setting-head strong{font-size:.78rem}
+  .side .balance-range{height:28px}
+}
+
+@media(max-width:860px){
+  .custom-card,.info-card,.history-card,.finish-card{width:100%}
+}
+
+@media(max-width:450px){
+  .sidequest-actions{gap:5px!important}
+  .sidequest-action-btn{font-size:.66rem!important;padding:6px 7px!important}
+  .sidequest-add-form{gap:5px!important}
+  .sidequest-add-form input{min-height:34px!important;font-size:.78rem}
+  .side .custom-add{min-height:34px!important}
+}

@@ -52,6 +52,13 @@ window.HOME_TASKS = [
     }
   ];
 
+if (!document.querySelector('script[data-homeoffice-profile]')) {
+  const profileScript = document.createElement('script');
+  profileScript.src = 'profile.js';
+  profileScript.dataset.homeofficeProfile = 'true';
+  document.head.appendChild(profileScript);
+}
+
 if (!document.querySelector('script[data-homeoffice-sidequests]')) {
   const sideQuestScript = document.createElement('script');
   sideQuestScript.src = 'sidequests.js';

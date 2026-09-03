@@ -5,9 +5,9 @@
   if (!document.getElementById("sideQuestBar")) {
     const style = document.createElement("style");
     style.textContent = `
-      .sidequest-sticky{position:sticky;top:0;z-index:1000;padding:8px 10px 0;pointer-events:none}
-      .sidequest-inner{width:min(1180px,100%);margin:0 auto;display:grid;grid-template-columns:auto 1fr 1fr;gap:9px;align-items:stretch;padding:8px;border:1px solid rgba(255,255,255,.13);border-radius:18px;background:rgba(8,13,29,.86);box-shadow:0 12px 34px rgba(0,0,0,.28);backdrop-filter:blur(20px);pointer-events:auto}
-      .sidequest-label{display:flex;align-items:center;padding:0 10px;color:#aeb8d5;font-size:.7rem;font-weight:900;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap}
+      .sidequest-sticky{position:sticky;top:8px;z-index:20;margin:0 0 20px;padding:0;pointer-events:none}
+      .sidequest-inner{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch;padding:8px;border:1px solid rgba(255,255,255,.13);border-radius:18px;background:rgba(8,13,29,.92);box-shadow:0 12px 34px rgba(0,0,0,.28);backdrop-filter:blur(20px);pointer-events:auto}
+      .sidequest-label{grid-column:1/-1;display:flex;align-items:center;padding:0 4px;color:#aeb8d5;font-size:.7rem;font-weight:900;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap}
       .sidequest{min-width:0;display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:13px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08)}
       .sidequest-icon{font-size:1.25rem;flex:0 0 auto}
       .sidequest-main{min-width:0;flex:1}
@@ -29,10 +29,10 @@
       .meds-toggle.on .meds-track{background:rgba(112,225,200,.6)}
       .meds-toggle.on .meds-knob{transform:translateX(14px)}
       .sq-xp{font-size:.65rem;color:#ffe0ad;font-weight:900;white-space:nowrap}
-      @media(max-width:760px){
-        .sidequest-sticky{padding:5px 6px 0}
-        .sidequest-inner{grid-template-columns:1fr 1fr;padding:6px;gap:6px;border-radius:15px}
-        .sidequest-label{grid-column:1/-1;padding:1px 5px;font-size:.62rem}
+      @media(max-width:620px){
+        .sidequest-sticky{top:5px;margin-bottom:16px}
+        .sidequest-inner{padding:6px;gap:6px;border-radius:15px}
+        .sidequest-label{padding:1px 5px;font-size:.62rem}
         .sidequest{padding:8px;gap:6px}
         .sidequest-icon{display:none}
         .water-controls{gap:3px}
@@ -48,7 +48,12 @@
     `;
     document.head.appendChild(style);
 
-    document.body.insertAdjacentHTML("afterbegin", `
+    const taskView = document.getElementById("randomScreen");
+    if (!taskView) return;
+    const stage = taskView.closest(".stage");
+    if (stage) stage.style.overflow = CSS.supports("overflow", "clip") ? "clip" : "visible";
+
+    taskView.insertAdjacentHTML("afterbegin", `
       <div class="sidequest-sticky" id="sideQuestBar">
         <div class="sidequest-inner">
           <div class="sidequest-label">Nebenquests</div>

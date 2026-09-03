@@ -1,9 +1,10 @@
 (() => {
   const MAIN_KEY = 'andrin-homeoffice:v2';
   const SIDE_KEY = 'andrin-homeoffice:sidequests:v1';
+  const HISTORY_KEY = 'homeoffice:history:v1';
   const TOKEN_KEY = 'andrin-homeoffice:cloud-token:v1';
   const META_KEY = 'andrin-homeoffice:cloud-meta:v1';
-  const TARGET_KEYS = new Set([MAIN_KEY, SIDE_KEY]);
+  const TARGET_KEYS = new Set([MAIN_KEY, SIDE_KEY, HISTORY_KEY]);
 
   const nativeSetItem = Storage.prototype.setItem;
   let suppress = false;
@@ -34,6 +35,7 @@
     return {
       main: localStorage.getItem(MAIN_KEY),
       sidequests: localStorage.getItem(SIDE_KEY),
+      history: localStorage.getItem(HISTORY_KEY),
       clientUpdatedAt: getMeta().localUpdatedAt || Date.now()
     };
   }
@@ -129,6 +131,7 @@
     try {
       if (typeof payload.main === 'string') nativeSetItem.call(localStorage, MAIN_KEY, payload.main);
       if (typeof payload.sidequests === 'string') nativeSetItem.call(localStorage, SIDE_KEY, payload.sidequests);
+      if (typeof payload.history === 'string') nativeSetItem.call(localStorage, HISTORY_KEY, payload.history);
       const remoteMs = Date.parse(updatedAt) || Date.now();
       saveMeta({ localUpdatedAt: remoteMs, remoteUpdatedAt: remoteMs });
     } finally {

@@ -1,6 +1,8 @@
 (() => {
   const MAIN_KEY = 'andrin-homeoffice:v2';
+  const SIDE_KEY = 'andrin-homeoffice:sidequests:v1';
   const HISTORY_KEY = 'homeoffice:history:v1';
+  const FIRST_NAME_KEY = 'homeoffice:first-name:v1';
   const MAX_ENTRIES = 180;
 
   const esc = value => String(value ?? '')
@@ -21,6 +23,11 @@
 
   function readMain() {
     const value = readJson(MAIN_KEY, {});
+    return value && typeof value === 'object' ? value : {};
+  }
+
+  function readSide() {
+    const value = readJson(SIDE_KEY, {});
     return value && typeof value === 'object' ? value : {};
   }
 
@@ -57,17 +64,21 @@
     }));
   }
 
-  function makeSnapshot(main) {
+  function makeSnapshot(main, side) {
     const startedAt = Number(main.startedAt) || 0;
     const endedAt = Number(main.endedAt) || 0;
     if (!startedAt || !endedAt || endedAt < startedAt) return null;
 
+    const taskXp = Math.max(0, Number(main.dayXp) || 0);
+    const sideQuestXp = Math.max(0, Number(side.dayXp) || 0);
     return {
       id: `session-${startedAt}`,
       startedAt,
       endedAt,
       durationMs: endedAt - startedAt,
-      dayXp: Math.max(0, Number(main.dayXp) || 0),
+      taskXp,
+      sideQuestXp,
+      dayXp: taskXp + sideQuestXp,
       completed: cloneCompleted(main.completed),
       feedback: cloneFeedback(main.feedback),
       savedAt: Date.now()
@@ -75,7 +86,7 @@
   }
 
   function upsertCurrentSession() {
-    const snapshot = makeSnapshot(readMain());
+    const snapshot = makeSnapshot(readMain(), readSide());
     if (!snapshot) return false;
 
     const history = readHistory();
@@ -109,6 +120,29 @@
     return m ? `${h} h ${m} Min.` : `${h} h`;
   }
 
+  function aggregate(history, days) {
+    const cutoff = Date.now() - days * 86400000;
+    const sessions = history.filter(item => (Number(item?.endedAt) || 0) >= cutoff);
+    return {
+      days: sessions.length,
+      durationMs: sessions.reduce((sum, item) => sum + (Number(item?.durationMs) || 0), 0),
+      tasks: sessions.reduce((sum, item) => sum + (Array.isArray(item?.completed) ? item.completed.length : 0), 0),
+      xp: sessions.reduce((sum, item) => sum + Math.max(0, Number(item?.dayXp) || 0), 0)
+    };
+  }
+
+  function statsMarkup(label, stats) {
+    return `<div class="archive-stat-group">
+      <strong>${label}</strong>
+      <div class="archive-stat-grid">
+        <div><span>Tage</span><b>${stats.days}</b></div>
+        <div><span>Zeit</span><b>${fmtDuration(stats.durationMs)}</b></div>
+        <div><span>Tasks</span><b>${stats.tasks}</b></div>
+        <div><span>XP</span><b>${stats.xp}</b></div>
+      </div>
+    </div>`;
+  }
+
   function renderNotes(feedback) {
     const rows = [
       ['Notiz', feedback.feelingText],
@@ -116,7 +150,6 @@
       ['Schwierig', feedback.hardText],
       ['Nächstes Mal', feedback.nextText]
     ].filter(([, value]) => String(value || '').trim());
-
     if (!rows.length) return '';
     return `<div class="archive-notes">${rows.map(([label, value]) => `
       <div class="archive-note"><span>${esc(label)}</span><p>${esc(value)}</p></div>
@@ -138,6 +171,66 @@
     return `<div class="archive-feelings">${feelings.map(item => `<span>${esc(item)}</span>`).join('')}</div>`;
   }
 
+  function exportBackup() {
+    upsertCurrentSession();
+    const backup = {
+      format: 'homeoffice-backup',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      data: {
+        main: localStorage.getItem(MAIN_KEY),
+        sidequests: localStorage.getItem(SIDE_KEY),
+        history: localStorage.getItem(HISTORY_KEY),
+        firstName: localStorage.getItem(FIRST_NAME_KEY)
+      }
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `homeoffice-backup-${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function normalizeBackupValue(value) {
+    if (value === null || value === undefined) return null;
+    return typeof value === 'string' ? value : JSON.stringify(value);
+  }
+
+  async function importBackup(file) {
+    let backup;
+    try {
+      backup = JSON.parse(await file.text());
+    } catch {
+      window.alert('Backup-Datei ist ungültig.');
+      return;
+    }
+
+    if (!backup || backup.format !== 'homeoffice-backup' || !backup.data || typeof backup.data !== 'object') {
+      window.alert('Keine gültige Homeoffice-Backup-Datei.');
+      return;
+    }
+
+    const ok = window.confirm('Backup importieren? Aktuelle lokale Daten werden ersetzt.');
+    if (!ok) return;
+
+    const values = [
+      [MAIN_KEY, backup.data.main],
+      [SIDE_KEY, backup.data.sidequests],
+      [HISTORY_KEY, backup.data.history]
+    ];
+    for (const [key, value] of values) {
+      const normalized = normalizeBackupValue(value);
+      if (normalized !== null) localStorage.setItem(key, normalized);
+    }
+    if (typeof backup.data.firstName === 'string') localStorage.setItem(FIRST_NAME_KEY, backup.data.firstName);
+    location.reload();
+  }
+
   function ensureUi() {
     if (document.getElementById('sessionArchiveCard')) return;
     const side = document.querySelector('.side');
@@ -152,7 +245,15 @@
           <span class="summary-copy"><strong>📚 Verlauf</strong><small id="sessionArchiveCount">0 Tage</small></span>
           <span class="summary-chevron" aria-hidden="true">⌄</span>
         </summary>
-        <div class="panel-details-body archive-body" id="sessionArchiveBody"></div>
+        <div class="panel-details-body archive-body">
+          <div class="archive-stats" id="sessionArchiveStats"></div>
+          <div class="archive-tools">
+            <button type="button" id="exportBackupBtn">↓ Backup</button>
+            <button type="button" id="importBackupBtn">↑ Import</button>
+            <input type="file" id="importBackupInput" accept="application/json,.json" hidden />
+          </div>
+          <div id="sessionArchiveDays"></div>
+        </div>
       </details>`;
     side.appendChild(card);
 
@@ -160,7 +261,17 @@
     style.id = 'sessionArchiveStyles';
     style.textContent = `
       .archive-card{min-width:0;grid-column:1/-1!important;background:linear-gradient(180deg,rgba(112,225,200,.055),rgba(255,255,255,.04))!important}
-      .archive-body{display:grid;gap:8px;max-height:min(62vh,620px);overflow:auto;padding-right:2px}
+      .archive-body{display:grid;gap:9px;max-height:min(68vh,700px);overflow:auto;padding-right:2px}
+      .archive-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+      .archive-stat-group{padding:8px;border-radius:11px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06)}
+      .archive-stat-group>strong{display:block;font-size:.67rem;margin-bottom:6px;color:#dfe5f8}
+      .archive-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+      .archive-stat-grid div{min-width:0;padding:5px;border-radius:8px;background:rgba(255,255,255,.035)}
+      .archive-stat-grid span{display:block;font-size:.52rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+      .archive-stat-grid b{display:block;margin-top:2px;font-size:.67rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .archive-tools{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+      .archive-tools button{min-height:32px;padding:6px 9px;border-radius:9px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.045);color:#dfe5f8;font-size:.68rem;font-weight:850}
+      #sessionArchiveDays{display:grid;gap:8px}
       .archive-day{border:1px solid rgba(255,255,255,.085);border-radius:13px;background:rgba(255,255,255,.035);overflow:hidden}
       .archive-day>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px;cursor:pointer}
       .archive-day>summary::-webkit-details-marker{display:none}
@@ -173,6 +284,7 @@
       .archive-session-meta div{padding:7px;border-radius:9px;background:rgba(255,255,255,.045);min-width:0}
       .archive-session-meta span{display:block;font-size:.57rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
       .archive-session-meta strong{display:block;margin-top:2px;font-size:.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .archive-xp-breakdown{font-size:.6rem;color:var(--muted);margin:-2px 0 8px;text-align:right}
       .archive-tasks{display:grid;gap:4px;margin-top:2px}
       .archive-task{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 7px;border-radius:8px;background:rgba(255,255,255,.035)}
       .archive-task span{min-width:0;font-size:.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -185,31 +297,43 @@
       .archive-note p{margin:0;font-size:.7rem;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere}
       .archive-empty{padding:12px 4px;color:var(--muted);font-size:.72rem;text-align:center}
       @media(max-width:860px){.archive-card{order:8;width:100%}}
-      @media(max-width:450px){
-        .archive-session-meta{gap:4px}.archive-session-meta div{padding:6px}
-        .archive-task{align-items:flex-start;flex-direction:column;gap:2px}
-      }
+      @media(max-width:450px){.archive-stats{grid-template-columns:1fr}.archive-session-meta{gap:4px}.archive-session-meta div{padding:6px}.archive-task{align-items:flex-start;flex-direction:column;gap:2px}}
     `;
     document.head.appendChild(style);
+
+    document.getElementById('exportBackupBtn')?.addEventListener('click', exportBackup);
+    const importBtn = document.getElementById('importBackupBtn');
+    const importInput = document.getElementById('importBackupInput');
+    importBtn?.addEventListener('click', () => importInput?.click());
+    importInput?.addEventListener('change', async () => {
+      const file = importInput.files?.[0];
+      if (file) await importBackup(file);
+      importInput.value = '';
+    });
   }
 
   function render() {
     ensureUi();
-    const body = document.getElementById('sessionArchiveBody');
+    const daysHost = document.getElementById('sessionArchiveDays');
     const count = document.getElementById('sessionArchiveCount');
-    if (!body || !count) return;
+    const stats = document.getElementById('sessionArchiveStats');
+    if (!daysHost || !count || !stats) return;
 
     const history = readHistory();
     count.textContent = `${history.length} ${history.length === 1 ? 'Tag' : 'Tage'}`;
+    stats.innerHTML = statsMarkup('7 Tage', aggregate(history, 7)) + statsMarkup('30 Tage', aggregate(history, 30));
 
     if (!history.length) {
-      body.innerHTML = '<div class="archive-empty">Noch kein abgeschlossener Homeoffice-Tag.</div>';
+      daysHost.innerHTML = '<div class="archive-empty">Noch kein abgeschlossener Homeoffice-Tag.</div>';
       return;
     }
 
-    body.innerHTML = history.map((session, index) => {
+    daysHost.innerHTML = history.map((session, index) => {
       const completed = Array.isArray(session.completed) ? session.completed : [];
       const feedback = cloneFeedback(session.feedback);
+      const taskXp = Math.max(0, Number(session.taskXp) || Number(session.dayXp) || 0);
+      const sideQuestXp = Math.max(0, Number(session.sideQuestXp) || 0);
+      const dayXp = Math.max(0, Number(session.dayXp) || taskXp + sideQuestXp);
       return `
         <details class="archive-day" ${index === 0 ? 'open' : ''}>
           <summary>
@@ -217,7 +341,7 @@
               <strong>${esc(fmtDate(session.startedAt))}</strong>
               <small>${fmtClock(session.startedAt)}–${fmtClock(session.endedAt)} · ${fmtDuration(session.durationMs)} · ${completed.length} Tasks</small>
             </span>
-            <span class="archive-day-xp">+${Math.max(0, Number(session.dayXp) || 0)} XP</span>
+            <span class="archive-day-xp">+${dayXp} XP</span>
           </summary>
           <div class="archive-day-content">
             <div class="archive-session-meta">
@@ -225,6 +349,7 @@
               <div><span>Ende</span><strong>${fmtClock(session.endedAt)}</strong></div>
               <div><span>Dauer</span><strong>${fmtDuration(session.durationMs)}</strong></div>
             </div>
+            ${sideQuestXp ? `<div class="archive-xp-breakdown">Tasks +${taskXp} · Nebenquests +${sideQuestXp} XP</div>` : ''}
             ${renderTasks(completed)}
             ${renderFeelings(feedback.feelings)}
             ${renderNotes(feedback)}
@@ -233,9 +358,7 @@
     }).join('');
   }
 
-  function scheduleArchive() {
-    window.setTimeout(upsertCurrentSession, 0);
-  }
+  const scheduleArchive = () => setTimeout(upsertCurrentSession, 0);
 
   ensureUi();
   upsertCurrentSession();
@@ -243,14 +366,10 @@
 
   document.getElementById('finishBtn')?.addEventListener('click', scheduleArchive);
   document.getElementById('resetBtn')?.addEventListener('click', upsertCurrentSession, true);
-
-  ['feelingText', 'goodText', 'hardText', 'nextText'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', scheduleArchive);
-  });
-
+  ['feelingText', 'goodText', 'hardText', 'nextText'].forEach(id => document.getElementById(id)?.addEventListener('input', scheduleArchive));
   document.getElementById('feelings')?.addEventListener('click', scheduleArchive);
   window.addEventListener('pagehide', upsertCurrentSession);
   window.addEventListener('storage', event => {
-    if (event.key === HISTORY_KEY) render();
+    if ([HISTORY_KEY, MAIN_KEY, SIDE_KEY].includes(event.key)) render();
   });
 })();

@@ -5,7 +5,7 @@
   if (!document.getElementById("sideQuestBar")) {
     const style = document.createElement("style");
     style.textContent = `
-      .sidequest-sticky{position:sticky;top:8px;z-index:20;margin:0 0 20px;padding:0;pointer-events:none}
+      .sidequest-sticky{position:relative;z-index:1;margin:0;padding:0;pointer-events:none}
       .sidequest-inner{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch;padding:8px;border:1px solid rgba(255,255,255,.13);border-radius:18px;background:rgba(8,13,29,.92);box-shadow:0 12px 34px rgba(0,0,0,.28);backdrop-filter:blur(20px);pointer-events:auto}
       .sidequest-label{grid-column:1/-1;display:flex;align-items:center;padding:0 4px;color:#aeb8d5;font-size:.7rem;font-weight:900;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap}
       .sidequest{min-width:0;display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:13px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08)}
@@ -30,7 +30,6 @@
       .meds-toggle.on .meds-knob{transform:translateX(14px)}
       .sq-xp{font-size:.65rem;color:#ffe0ad;font-weight:900;white-space:nowrap}
       @media(max-width:620px){
-        .sidequest-sticky{top:5px;margin-bottom:16px}
         .sidequest-inner{padding:6px;gap:6px;border-radius:15px}
         .sidequest-label{padding:1px 5px;font-size:.62rem}
         .sidequest{padding:8px;gap:6px}
@@ -40,7 +39,6 @@
         .water-segments{min-width:54px;gap:2px}
       }
       @media(max-width:450px){
-        .sidequest-inner{grid-template-columns:1fr}
         .sidequest-label{display:none}
         .sidequest{padding:7px 9px}
         .sidequest-status{margin-top:2px}
@@ -48,12 +46,10 @@
     `;
     document.head.appendChild(style);
 
-    const taskView = document.getElementById("randomScreen");
-    if (!taskView) return;
-    const stage = taskView.closest(".stage");
-    if (stage) stage.style.overflow = CSS.supports("overflow", "clip") ? "clip" : "visible";
+    const side = document.querySelector(".side");
+    if (!side) return;
 
-    taskView.insertAdjacentHTML("afterbegin", `
+    side.insertAdjacentHTML("afterbegin", `
       <div class="sidequest-sticky" id="sideQuestBar">
         <div class="sidequest-inner">
           <div class="sidequest-label">Nebenquests</div>

@@ -54,6 +54,7 @@ module.exports = async function handler(req, res) {
       const payload = JSON.stringify({
         main: body.main ?? null,
         sidequests: body.sidequests ?? null,
+        history: body.history ?? null,
         clientUpdatedAt: Number(body.clientUpdatedAt) || Date.now()
       });
 

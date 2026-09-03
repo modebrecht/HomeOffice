@@ -4,27 +4,27 @@
 }
 
 /* app.js adds .hidden as soon as the task is selected. Keep the landed die visible
-   for one extra beat, then fade and collapse the stage before the task settles in. */
+   for a full beat, then fade and collapse the stage before the task settles in. */
 #dicePanel.hidden{
   display:block!important;
   pointer-events:none;
   overflow:hidden;
-  animation:diceLandingHold 1.18s cubic-bezier(.2,.75,.2,1) both;
+  animation:diceLandingHold 1.28s cubic-bezier(.2,.75,.2,1) both;
 }
 
 .task-card:not(.hidden){
   transform-origin:50% 0;
-  animation:taskPremiumReveal 1.42s cubic-bezier(.16,.84,.2,1) both;
+  animation:taskPremiumReveal 1.52s cubic-bezier(.16,.84,.2,1) both;
 }
 
 @keyframes diceLandingHold{
-  0%,72%{
+  0%,78%{
     opacity:1;
     transform:translateY(0) scale(1);
     max-height:620px;
     filter:brightness(1);
   }
-  84%{
+  88%{
     opacity:1;
     transform:translateY(-2px) scale(1.006);
     max-height:620px;
@@ -41,14 +41,14 @@
 }
 
 @keyframes taskPremiumReveal{
-  0%,66%{
+  0%,72%{
     opacity:0;
     transform:translateY(22px) scale(.975);
     filter:blur(5px);
   }
-  78%{
-    opacity:.2;
-    transform:translateY(14px) scale(.982);
+  82%{
+    opacity:.25;
+    transform:translateY(13px) scale(.983);
     filter:blur(3px);
   }
   100%{
@@ -59,8 +59,8 @@
 }
 
 @media(max-width:450px){
-  #dicePanel.hidden{animation-duration:1.12s}
-  .task-card:not(.hidden){animation-duration:1.34s}
+  #dicePanel.hidden{animation-duration:1.22s}
+  .task-card:not(.hidden){animation-duration:1.46s}
 }
 
 @media(prefers-reduced-motion:reduce){

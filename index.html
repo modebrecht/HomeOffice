@@ -12,34 +12,28 @@
   <div class="shell">
     <header class="app-header">
       <div class="brand">
-        <div class="eyebrow">🍔 Homeoffice ohne Overload</div>
         <h1 id="brandTitle">Homeoffice</h1>
-        <p class="intro-copy">Start und Feierabend sind fix. Dazwischen entscheidet der Würfel. Ein Task nach dem anderen reicht.</p>
       </div>
       <div class="header-status">
         <div class="xp-chip">⭐ <strong id="headerXp">0 XP</strong></div>
-        <div class="status" id="statusPill">Noch nicht gestartet</div>
+        <div class="status" id="statusPill">Nicht gestartet</div>
       </div>
     </header>
 
     <main class="layout">
       <section class="card stage">
         <div id="startScreen" class="screen active">
-          <div class="eyebrow">🟢 Fixer Start</div>
-          <h2>Zeit starten.</h2>
-          <p class="lead">Starte deinen Homeoffice-Block. Ab dann zählt nur der nächste Schritt – nicht die ganze Liste.</p>
-          <div class="timebox">
+          <div class="eyebrow">🟢 Start</div>
+          <h2>Homeoffice starten</h2>
+          <div class="timebox compact-timebox">
             <div class="metric"><span>Startzeit</span><strong id="startTimePreview">–</strong></div>
-            <div class="metric"><span>Heute gilt</span><strong>Ein Task nach dem anderen</strong></div>
           </div>
-          <div class="actions"><button class="primary" id="startBtn">▶ Homeoffice starten</button></div>
-          <div class="burger"><b>START</b> → 🎲 Random Tasks → <b>FINAL</b></div>
+          <div class="actions"><button class="primary" id="startBtn">▶ Starten</button></div>
         </div>
 
         <div id="randomScreen" class="screen">
           <div class="eyebrow">🎲 Randomizer</div>
-          <h2>Was kommt als Nächstes?</h2>
-          <p class="lead random-lead">Der Würfel wählt den nächsten Task. Nach Work / Creative werden leichte Tasks beim nächsten Wurf etwas wahrscheinlicher.</p>
+          <h2>Nächster Task</h2>
 
           <div id="dicePanel">
             <div class="cube-area">
@@ -53,7 +47,7 @@
                 <div class="face bottom"><i class="pip c1"></i><i class="pip c3"></i><i class="pip c5"></i><i class="pip c7"></i><i class="pip c9"></i></div>
               </div>
             </div>
-            <div class="roll-label" id="rollLabel">Bereit?</div>
+            <div class="roll-label" id="rollLabel">Bereit</div>
             <div class="actions dice-actions"><button class="primary" id="rollBtn">🎲 Würfeln</button></div>
           </div>
 
@@ -67,8 +61,8 @@
             </div>
 
             <div class="task-runner">
-              <div><span class="task-runner-label">Zeit an diesem Task</span><strong id="taskTimer">00:00:00</strong></div>
-              <div class="task-xp-live"><span>XP beim Abschluss</span><strong id="taskXpPreview">+10 XP</strong></div>
+              <div><span class="task-runner-label">Task-Zeit</span><strong id="taskTimer">00:00:00</strong></div>
+              <div class="task-xp-live"><span>XP</span><strong id="taskXpPreview">+10 XP</strong></div>
             </div>
 
             <div class="task-body" id="taskBody"></div>
@@ -78,40 +72,38 @@
               <div class="task-finish-zone hidden" id="taskFinishZone">
                 <button class="finish-toggle" id="finishToggle" type="button" aria-pressed="false">
                   <span class="toggle-track"><span class="toggle-knob"></span></span>
-                  <span id="finishToggleText">Task fertig? AUS</span>
+                  <span id="finishToggleText">Fertig? AUS</span>
                 </button>
-                <button class="complete-task hidden" id="completeTaskBtn">✓ Task abschliessen</button>
+                <button class="complete-task hidden" id="completeTaskBtn">✓ Abschliessen</button>
               </div>
             </div>
           </article>
         </div>
 
         <div id="finalScreen" class="screen">
-          <div class="eyebrow">🔴 Fixer Abschluss</div>
-          <h2>Feierabend.</h2>
-          <p class="lead">Timer stoppen, kurz zurückschauen, Gefühl festhalten. Danach ist der Homeoffice-Block wirklich fertig.</p>
+          <div class="eyebrow">🔴 Abschluss</div>
+          <h2>Feierabend</h2>
           <div class="final-grid">
             <div class="metric"><span>Start</span><strong id="finalStart">–</strong></div>
             <div class="metric"><span>Ende</span><strong id="finalEnd">–</strong></div>
             <div class="metric"><span>Gesamt</span><strong id="finalDuration">–</strong></div>
           </div>
-          <div class="final-xp">⭐ Heute gesammelt: <strong id="finalXp">0 XP</strong></div>
-          <label>Welche Tasks habe ich gemacht?</label>
-          <div id="finalTasks" class="subtle">Noch keine erledigten Tasks.</div>
-          <label>Wie fühlst du dich jetzt?</label>
+          <div class="final-xp">⭐ <strong id="finalXp">0 XP</strong></div>
+          <label>Erledigte Tasks</label>
+          <div id="finalTasks" class="subtle">Keine</div>
+          <label>Gefühl</label>
           <div class="feeling-grid" id="feelings">
             <button class="feel">🙂 zufrieden</button><button class="feel">😌 entspannt</button><button class="feel">😴 müde</button><button class="feel">✨ motiviert</button>
             <button class="feel">🎨 kreativ</button><button class="feel">🌿 ruhig</button><button class="feel">💪 stolz</button><button class="feel">🫠 erschöpft</button>
           </div>
-          <textarea id="feelingText" placeholder="Oder beschreibe dein Gefühl mit eigenen Worten …"></textarea>
-          <label>Was hat heute gut funktioniert?</label>
-          <textarea id="goodText" placeholder="Zum Beispiel: Ich konnte mich gut auf einen Task konzentrieren …"></textarea>
-          <label>Was war schwierig?</label>
-          <textarea id="hardText" placeholder="Zum Beispiel: Der Einstieg war schwierig …"></textarea>
-          <label>Was möchtest du beim nächsten Homeoffice-Tag anders machen?</label>
-          <textarea id="nextText" placeholder="Ein kleiner Gedanke reicht."></textarea>
-          <div class="actions final-actions"><button class="primary" id="resetBtn">↻ Neuen Tag starten</button></div>
-          <div class="burger">🍔 <b>Timer aus.</b> Für heute ist genug.</div>
+          <textarea id="feelingText" placeholder="Notiz"></textarea>
+          <label>Gut</label>
+          <textarea id="goodText" placeholder="Notiz"></textarea>
+          <label>Schwierig</label>
+          <textarea id="hardText" placeholder="Notiz"></textarea>
+          <label>Nächstes Mal</label>
+          <textarea id="nextText" placeholder="Notiz"></textarea>
+          <div class="actions final-actions"><button class="primary" id="resetBtn">↻ Neuer Tag</button></div>
         </div>
       </section>
 
@@ -120,14 +112,14 @@
           <section class="card stat-card timer-card">
             <span class="stat-label">⏱️ Zeit</span>
             <div class="timer" id="timer">00:00:00</div>
-            <div class="subtle" id="timerSub">Noch nicht gestartet.</div>
+            <div class="subtle" id="timerSub">Nicht gestartet</div>
           </section>
 
           <section class="card stat-card xp-card">
             <span class="stat-label">⭐ XP</span>
             <div class="xp-total" id="xpTotal">0 XP</div>
             <div class="subtle" id="dayXp">Heute: +0 XP</div>
-            <div class="subtle xp-rule">Lightweight +10 · Work / Creative bis +50 XP</div>
+            <div class="subtle xp-rule">Lightweight +10 · Work / Creative bis +50</div>
           </section>
         </div>
 
@@ -136,7 +128,6 @@
             <summary class="panel-summary">
               <span class="summary-copy">
                 <strong>➕ Custom Quest hinzufügen</strong>
-                <small>Antippen, um das Formular zu öffnen</small>
               </span>
               <span class="summary-chevron" aria-hidden="true">⌄</span>
             </summary>
@@ -144,7 +135,7 @@
             <div class="panel-details-body">
               <form id="customTaskForm" class="custom-form">
                 <label for="customTitle">Quest</label>
-                <input id="customTitle" maxlength="80" autocomplete="off" placeholder="z. B. Fotos sortieren" required />
+                <input id="customTitle" maxlength="80" autocomplete="off" placeholder="Titel" required />
 
                 <div class="custom-grid">
                   <div>
@@ -162,12 +153,12 @@
 
                 <label>Wiederholbar?</label>
                 <div class="repeat-choice" role="group" aria-label="Wiederholbar">
-                  <button type="button" class="repeat-option active" data-repeat="yes">Ja · dauerhaft</button>
-                  <button type="button" class="repeat-option" data-repeat="no">Nein · nur heute</button>
+                  <button type="button" class="repeat-option active" data-repeat="yes">Ja</button>
+                  <button type="button" class="repeat-option" data-repeat="no">Nein</button>
                 </div>
-                <p class="tiny repeat-help" id="repeatHelp">Bleibt auch nach dem Abschluss und an neuen Tagen im Random-Pool.</p>
+                <p class="tiny repeat-help" id="repeatHelp">Dauerhaft</p>
 
-                <button class="secondary custom-add" type="submit">+ Quest hinzufügen</button>
+                <button class="secondary custom-add" type="submit">+ Hinzufügen</button>
               </form>
             </div>
           </details>
@@ -175,7 +166,7 @@
           <div class="custom-list-wrap">
             <div class="custom-list-title">Eigene Quests <span id="customCount">0</span></div>
             <div id="customTaskList" class="custom-task-list">
-              <div class="tiny">Noch keine Custom Quests.</div>
+              <div class="tiny">Keine</div>
             </div>
           </div>
         </section>
@@ -183,38 +174,36 @@
         <section class="card info-card">
           <details class="panel-details compact-details">
             <summary class="panel-summary">
-              <span class="summary-copy"><strong>⚖️ Randomizer-Balance</strong><small id="weightText">Lightweight-Bonus nach Work / Creative: 40 %</small></span>
+              <span class="summary-copy"><strong>⚖️ Randomizer-Balance</strong><small id="weightText">Lightweight +40 %</small></span>
               <span class="summary-chevron" aria-hidden="true">⌄</span>
             </summary>
             <div class="panel-details-body balance-body">
               <div class="balance-setting">
                 <div class="balance-setting-head">
-                  <label for="lightBonusRange">Lightweight-Bonus</label>
+                  <label for="lightBonusRange">Lightweight</label>
                   <strong id="lightBonusSettingText">40 %</strong>
                 </div>
                 <input class="balance-range" id="lightBonusRange" type="range" min="0" max="100" step="10" value="40" />
-                <div class="tiny">Gilt nach einem Work / Creative Task für den nächsten Wurf.</div>
               </div>
               <div class="bar"><div id="weightBar"></div></div>
-              <div class="balance"><span class="tiny">Aktuell aktiv</span><strong id="bonusText">0 %</strong></div>
+              <div class="balance"><span class="tiny">Aktiv</span><strong id="bonusText">0 %</strong></div>
             </div>
           </details>
         </section>
 
         <section class="card history-card">
           <h3>✅ Heute erledigt</h3>
-          <ul class="history" id="history"><li><span class="n">–</span><span>Noch kein Random-Task erledigt.</span></li></ul>
+          <ul class="history" id="history"><li><span class="n">–</span><span>Keine</span></li></ul>
         </section>
 
         <section class="card finish-card">
           <details class="panel-details finish-details">
             <summary class="panel-summary finish-summary">
-              <span class="summary-copy"><strong>🏁 Homeoffice beenden</strong><small>Antippen – danach erscheint der Button</small></span>
+              <span class="summary-copy"><strong>🏁 Homeoffice beenden</strong></span>
               <span class="summary-chevron" aria-hidden="true">⌄</span>
             </summary>
             <div class="panel-details-body finish-body">
-              <p class="subtle">Du kannst jederzeit aufhören. Es gibt keine Mindestanzahl an Tasks.</p>
-              <button class="danger" id="finishBtn" disabled>Homeoffice jetzt beenden</button>
+              <button class="danger" id="finishBtn" disabled>Homeoffice beenden</button>
             </div>
           </details>
         </section>

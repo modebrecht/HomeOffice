@@ -10,11 +10,11 @@
 </head>
 <body>
   <div class="shell">
-    <header>
+    <header class="app-header">
       <div class="brand">
-        <div class="eyebrow">🍔 Burger-Prinzip · Homeoffice ohne Overload</div>
+        <div class="eyebrow">🍔 Homeoffice ohne Overload</div>
         <h1 id="brandTitle">Homeoffice</h1>
-        <p>Start und Feierabend sind fix. Dazwischen entscheidet der Würfel. Du musst nicht alle Tasks an einem Tag schaffen – ein guter Homeoffice-Tag darf klein sein.</p>
+        <p class="intro-copy">Start und Feierabend sind fix. Dazwischen entscheidet der Würfel. Ein Task nach dem anderen reicht.</p>
       </div>
       <div class="header-status">
         <div class="xp-chip">⭐ <strong id="headerXp">0 XP</strong></div>
@@ -39,7 +39,7 @@
         <div id="randomScreen" class="screen">
           <div class="eyebrow">🎲 Randomizer</div>
           <h2>Was kommt als Nächstes?</h2>
-          <p class="lead">Nach einem Arbeits- oder Creative-Task werden Lightweight-Tasks automatisch um <b>40&nbsp;% höher gewichtet</b>. So entsteht mehr Abwechslung statt Dauerleistung.</p>
+          <p class="lead random-lead">Der Würfel wählt den nächsten Task. Nach Work / Creative werden leichte Tasks beim nächsten Wurf etwas wahrscheinlicher.</p>
 
           <div id="dicePanel">
             <div class="cube-area">
@@ -110,59 +110,67 @@
           <textarea id="hardText" placeholder="Zum Beispiel: Der Einstieg war schwierig …"></textarea>
           <label>Was möchtest du beim nächsten Homeoffice-Tag anders machen?</label>
           <textarea id="nextText" placeholder="Ein kleiner Gedanke reicht."></textarea>
-          <div class="actions" style="margin-top:18px"><button class="primary" id="resetBtn">↻ Neuen Tag starten</button></div>
+          <div class="actions final-actions"><button class="primary" id="resetBtn">↻ Neuen Tag starten</button></div>
           <div class="burger">🍔 <b>Timer aus.</b> Für heute ist genug.</div>
         </div>
       </section>
 
       <aside class="side">
-        <section class="card">
-          <h3>⏱️ Homeoffice-Zeit</h3>
-          <div class="timer" id="timer">00:00:00</div>
-          <div class="subtle" id="timerSub">Noch nicht gestartet.</div>
-        </section>
+        <div class="status-grid">
+          <section class="card stat-card timer-card">
+            <span class="stat-label">⏱️ Zeit</span>
+            <div class="timer" id="timer">00:00:00</div>
+            <div class="subtle" id="timerSub">Noch nicht gestartet.</div>
+          </section>
 
-        <section class="card xp-card">
-          <h3>⭐ XP</h3>
-          <div class="xp-total" id="xpTotal">0 XP</div>
-          <div class="subtle" id="dayXp">Heute: +0 XP</div>
-          <div class="subtle xp-rule">Lightweight: +10 XP · grössere Tasks: mindestens +10 XP, dann +10 XP je volle 30 Minuten · maximal +50 XP pro Task.</div>
-        </section>
+          <section class="card stat-card xp-card">
+            <span class="stat-label">⭐ XP</span>
+            <div class="xp-total" id="xpTotal">0 XP</div>
+            <div class="subtle" id="dayXp">Heute: +0 XP</div>
+            <div class="subtle xp-rule">Lightweight +10 · Work / Creative bis +50 XP</div>
+          </section>
+        </div>
 
         <section class="card custom-card">
-          <div class="custom-card-head">
-            <div>
-              <h3>➕ Custom Quest</h3>
-              <p class="subtle">Eigene Aufgabe in den Random-Pool legen.</p>
-            </div>
-          </div>
-          <form id="customTaskForm" class="custom-form">
-            <label for="customTitle">Quest</label>
-            <input id="customTitle" maxlength="80" autocomplete="off" placeholder="z. B. Fotos sortieren" required />
+          <details class="panel-details" id="customQuestDetails">
+            <summary class="panel-summary">
+              <span class="summary-copy">
+                <strong>➕ Custom Quest hinzufügen</strong>
+                <small>Eigene Aufgabe in den Random-Pool legen</small>
+              </span>
+              <span class="summary-chevron" aria-hidden="true">⌄</span>
+            </summary>
 
-            <div class="custom-grid">
-              <div>
-                <label for="customDuration">Dauer <span class="optional">optional</span></label>
-                <div class="duration-input"><input id="customDuration" type="number" min="1" max="480" inputmode="numeric" placeholder="30" /><span>Min.</span></div>
-              </div>
-              <div>
-                <label for="customType">Art</label>
-                <select id="customType">
-                  <option value="focus">Work / Creative</option>
-                  <option value="light">Lightweight</option>
-                </select>
-              </div>
-            </div>
+            <div class="panel-details-body">
+              <form id="customTaskForm" class="custom-form">
+                <label for="customTitle">Quest</label>
+                <input id="customTitle" maxlength="80" autocomplete="off" placeholder="z. B. Fotos sortieren" required />
 
-            <label>Wiederholbar?</label>
-            <div class="repeat-choice" role="group" aria-label="Wiederholbar">
-              <button type="button" class="repeat-option active" data-repeat="yes">Ja · dauerhaft</button>
-              <button type="button" class="repeat-option" data-repeat="no">Nein · nur heute</button>
-            </div>
-            <p class="tiny repeat-help" id="repeatHelp">Bleibt auch nach dem Abschluss und an neuen Tagen im Random-Pool.</p>
+                <div class="custom-grid">
+                  <div>
+                    <label for="customDuration">Dauer <span class="optional">optional</span></label>
+                    <div class="duration-input"><input id="customDuration" type="number" min="1" max="480" inputmode="numeric" placeholder="30" /><span>Min.</span></div>
+                  </div>
+                  <div>
+                    <label for="customType">Art</label>
+                    <select id="customType">
+                      <option value="focus">Work / Creative</option>
+                      <option value="light">Lightweight</option>
+                    </select>
+                  </div>
+                </div>
 
-            <button class="secondary custom-add" type="submit">+ Quest hinzufügen</button>
-          </form>
+                <label>Wiederholbar?</label>
+                <div class="repeat-choice" role="group" aria-label="Wiederholbar">
+                  <button type="button" class="repeat-option active" data-repeat="yes">Ja · dauerhaft</button>
+                  <button type="button" class="repeat-option" data-repeat="no">Nein · nur heute</button>
+                </div>
+                <p class="tiny repeat-help" id="repeatHelp">Bleibt auch nach dem Abschluss und an neuen Tagen im Random-Pool.</p>
+
+                <button class="secondary custom-add" type="submit">+ Quest hinzufügen</button>
+              </form>
+            </div>
+          </details>
 
           <div class="custom-list-wrap">
             <div class="custom-list-title">Eigene Quests <span id="customCount">0</span></div>
@@ -172,22 +180,35 @@
           </div>
         </section>
 
-        <section class="card">
-          <h3>⚖️ Randomizer-Balance</h3>
-          <div class="subtle" id="weightText">Normaler Mix aus Focus und Lightweight.</div>
-          <div class="bar"><div id="weightBar"></div></div>
-          <div class="balance"><span class="tiny">Lightweight-Bonus</span><strong id="bonusText">0 %</strong></div>
+        <section class="card info-card">
+          <details class="panel-details compact-details">
+            <summary class="panel-summary">
+              <span class="summary-copy"><strong>⚖️ Randomizer-Balance</strong><small id="weightText">Normaler Mix aus Focus und Lightweight.</small></span>
+              <span class="summary-chevron" aria-hidden="true">⌄</span>
+            </summary>
+            <div class="panel-details-body balance-body">
+              <div class="bar"><div id="weightBar"></div></div>
+              <div class="balance"><span class="tiny">Lightweight-Bonus</span><strong id="bonusText">0 %</strong></div>
+            </div>
+          </details>
         </section>
 
-        <section class="card wide">
+        <section class="card history-card">
           <h3>✅ Heute erledigt</h3>
           <ul class="history" id="history"><li><span class="n">–</span><span>Noch kein Random-Task erledigt.</span></li></ul>
         </section>
 
-        <section class="card wide">
-          <h3>🏁 Nicht alles schaffen.</h3>
-          <p class="subtle">Du kannst jederzeit Feierabend machen. Es gibt keine Mindestanzahl an Tasks und keinen Bonus dafür, die ganze Liste an einem Tag abzuarbeiten.</p>
-          <button class="danger" id="finishBtn" disabled>Homeoffice beenden</button>
+        <section class="card finish-card">
+          <details class="panel-details finish-details">
+            <summary class="panel-summary finish-summary">
+              <span class="summary-copy"><strong>🏁 Feierabend</strong><small>Homeoffice bewusst beenden</small></span>
+              <span class="summary-chevron" aria-hidden="true">⌄</span>
+            </summary>
+            <div class="panel-details-body finish-body">
+              <p class="subtle">Du kannst jederzeit aufhören. Es gibt keine Mindestanzahl an Tasks.</p>
+              <button class="danger" id="finishBtn" disabled>Homeoffice beenden</button>
+            </div>
+          </details>
         </section>
       </aside>
     </main>

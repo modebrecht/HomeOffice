@@ -66,6 +66,7 @@
 .side{display:grid;grid-template-columns:1fr;gap:10px}
 .side .card{padding:14px}
 .side h3{margin:0 0 10px;font-size:.95rem}
+.sidequest-sticky{position:relative!important;top:auto!important;grid-column:1/-1;margin:0!important;padding:0!important}
 .status-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .stat-card{min-width:0}
 .stat-label{display:block;color:var(--muted);font-size:.7rem;font-weight:850;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
@@ -116,7 +117,12 @@
 .custom-delete:disabled{opacity:.25}
 
 .info-card,.finish-card{padding-top:10px!important;padding-bottom:10px!important}
-.balance-body .bar{margin-top:2px}
+.balance-setting{display:grid;gap:8px;padding:2px 0 4px}
+.balance-setting-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.balance-setting-head label{margin:0;color:var(--text);font-size:.78rem;font-weight:800}
+.balance-setting-head strong{color:#b9f7ea;font-size:.85rem;white-space:nowrap}
+.balance-range{width:100%;height:32px;margin:0;cursor:pointer;accent-color:var(--accent2)}
+.balance-body .bar{margin-top:10px}
 .balance{margin-top:10px;padding-top:10px}
 .history-card{padding:14px!important}
 .history{gap:6px;max-height:260px}
@@ -133,9 +139,8 @@
 textarea{min-height:84px}
 .hidden{display:none!important}
 
-/* The side-quest bar is injected later, so important keeps the mobile layout compact. */
 @media(max-width:450px){
-  .sidequest-sticky{top:4px!important;margin-bottom:12px!important}
+  .sidequest-sticky{top:auto!important;margin:0!important}
   .sidequest-inner{grid-template-columns:1fr 1fr!important;gap:4px!important;padding:4px!important;border-radius:14px!important}
   .sidequest-label{display:none!important}
   .sidequest{min-width:0!important;padding:7px!important;gap:4px!important}
@@ -158,7 +163,7 @@ textarea{min-height:84px}
   .timebox{grid-template-columns:repeat(2,minmax(0,1fr))}
   .custom-grid{grid-template-columns:1fr 1fr;gap:10px}
   .side{grid-template-columns:1fr 1fr}
-  .status-grid,.custom-card,.history-card,.finish-card{grid-column:1/-1}
+  .sidequest-sticky,.status-grid,.custom-card,.history-card,.finish-card{grid-column:1/-1}
   .info-card{grid-column:auto}
   .primary,.secondary,.danger,.complete-task{width:auto}
   .dice-actions .primary{min-width:170px}
@@ -197,6 +202,7 @@ textarea{min-height:84px}
   .task-runner strong{font-size:1.35rem}
   .side{grid-template-columns:1fr;gap:14px}
   .side .card{padding:18px}
+  .sidequest-sticky{grid-column:auto}
   .status-grid{grid-column:auto;grid-template-columns:1fr 1fr;gap:10px}
   .custom-card,.history-card,.finish-card,.info-card{grid-column:auto}
   .timer,.xp-total{font-size:2rem}

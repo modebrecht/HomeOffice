@@ -183,12 +183,20 @@
         <section class="card info-card">
           <details class="panel-details compact-details">
             <summary class="panel-summary">
-              <span class="summary-copy"><strong>⚖️ Randomizer-Balance</strong><small id="weightText">Normaler Mix aus Focus und Lightweight.</small></span>
+              <span class="summary-copy"><strong>⚖️ Randomizer-Balance</strong><small id="weightText">Lightweight-Bonus nach Work / Creative: 40 %</small></span>
               <span class="summary-chevron" aria-hidden="true">⌄</span>
             </summary>
             <div class="panel-details-body balance-body">
+              <div class="balance-setting">
+                <div class="balance-setting-head">
+                  <label for="lightBonusRange">Lightweight-Bonus</label>
+                  <strong id="lightBonusSettingText">40 %</strong>
+                </div>
+                <input class="balance-range" id="lightBonusRange" type="range" min="0" max="100" step="10" value="40" />
+                <div class="tiny">Gilt nach einem Work / Creative Task für den nächsten Wurf.</div>
+              </div>
               <div class="bar"><div id="weightBar"></div></div>
-              <div class="balance"><span class="tiny">Lightweight-Bonus</span><strong id="bonusText">0 %</strong></div>
+              <div class="balance"><span class="tiny">Aktuell aktiv</span><strong id="bonusText">0 %</strong></div>
             </div>
           </details>
         </section>

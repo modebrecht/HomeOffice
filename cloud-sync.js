@@ -10,16 +10,19 @@
   let suppress = false;
   let pushTimer = null;
   let syncing = false;
+  let pendingRemote = null;
 
   function getMeta() {
     try {
       return {
         localUpdatedAt: 0,
         remoteUpdatedAt: 0,
+        lastSyncAt: 0,
+        conflict: false,
         ...JSON.parse(localStorage.getItem(META_KEY) || '{}')
       };
     } catch {
-      return { localUpdatedAt: 0, remoteUpdatedAt: 0 };
+      return { localUpdatedAt: 0, remoteUpdatedAt: 0, lastSyncAt: 0, conflict: false };
     }
   }
 
@@ -40,25 +43,67 @@
     };
   }
 
+  function fmtSyncTime(value) {
+    if (!value) return '';
+    const d = new Date(value);
+    return d.toLocaleString('de-CH', {
+      day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+    });
+  }
+
   function ensureCloudButton() {
     if (document.getElementById('cloudSyncBtn')) return;
     const host = document.querySelector('.header-status');
     if (!host) return;
 
-    const btn = document.createElement('button');
-    btn.id = 'cloudSyncBtn';
-    btn.type = 'button';
-    btn.className = 'status';
-    btn.style.cursor = 'pointer';
-    btn.title = 'Cloud-Sync';
-    btn.textContent = getToken() ? '☁️ Sync' : '☁️ Cloud aus';
-    host.prepend(btn);
-    btn.addEventListener('click', onCloudButton);
+    const wrap = document.createElement('div');
+    wrap.className = 'cloud-sync-wrap';
+    wrap.innerHTML = `
+      <button id="cloudSyncBtn" type="button" class="status cloud-sync-btn">☁️</button>
+      <small id="cloudSyncMeta"></small>`;
+    host.prepend(wrap);
+
+    if (!document.getElementById('cloudSyncStyles')) {
+      const style = document.createElement('style');
+      style.id = 'cloudSyncStyles';
+      style.textContent = `
+        .cloud-sync-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:72px}
+        .cloud-sync-btn{cursor:pointer;min-height:30px!important;padding:5px 9px!important;font-size:.68rem!important;white-space:nowrap}
+        #cloudSyncMeta{max-width:112px;color:var(--muted);font-size:.52rem;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        @media(max-width:450px){.cloud-sync-wrap{min-width:58px}.cloud-sync-btn{padding:5px 7px!important}#cloudSyncMeta{max-width:76px;font-size:.48rem}}
+      `;
+      document.head.appendChild(style);
+    }
+
+    document.getElementById('cloudSyncBtn')?.addEventListener('click', onCloudButton);
+    renderIdleStatus();
   }
 
-  function setStatus(text) {
+  function setStatus(buttonText, metaText = '', title = '') {
     const btn = document.getElementById('cloudSyncBtn');
-    if (btn) btn.textContent = text;
+    const meta = document.getElementById('cloudSyncMeta');
+    if (btn) {
+      btn.textContent = buttonText;
+      btn.title = title || metaText || 'Cloud-Sync';
+    }
+    if (meta) meta.textContent = metaText;
+  }
+
+  function renderIdleStatus() {
+    if (!getToken()) {
+      setStatus('☁️ Aus', 'Nicht verbunden', 'Cloud-Sync verbinden');
+      return;
+    }
+    const meta = getMeta();
+    if (meta.conflict) {
+      setStatus('⚠️ Konflikt', 'Tippen zum Lösen', 'Cloud-Konflikt lösen');
+      return;
+    }
+    if (meta.lastSyncAt) {
+      setStatus('☁️ ✓', fmtSyncTime(meta.lastSyncAt), `Zuletzt gesichert: ${fmtSyncTime(meta.lastSyncAt)}`);
+      return;
+    }
+    setStatus('☁️ Sync', 'Noch nie', 'Cloud-Sync starten');
   }
 
   function markLocalChange() {
@@ -66,6 +111,7 @@
     const meta = getMeta();
     meta.localUpdatedAt = Date.now();
     saveMeta(meta);
+    if (getToken() && !meta.conflict) setStatus('☁️ •', 'Ungesichert', 'Lokale Änderungen noch nicht gesichert');
     schedulePush();
   }
 
@@ -75,7 +121,7 @@
   };
 
   function schedulePush() {
-    if (!getToken()) return;
+    if (!getToken() || getMeta().conflict) return;
     clearTimeout(pushTimer);
     pushTimer = setTimeout(() => pushLocal(), 900);
   }
@@ -91,7 +137,6 @@
       body: body ? JSON.stringify(body) : undefined,
       cache: 'no-store'
     });
-
     let data = {};
     try { data = await response.json(); } catch {}
     return { response, data };
@@ -100,26 +145,30 @@
   async function pushLocal() {
     if (!getToken() || syncing) return;
     syncing = true;
-    setStatus('☁️ Speichert…');
+    setStatus('☁️ ↑', 'Speichert…');
 
     try {
       const { response, data } = await request('POST', snapshot());
       if (response.status === 401) {
         localStorage.removeItem(TOKEN_KEY);
-        setStatus('☁️ Code nötig');
+        setStatus('☁️ Aus', 'Code ungültig');
         return;
       }
       if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
 
       const remoteMs = Date.parse(data.updatedAt) || Date.now();
+      const now = Date.now();
       const meta = getMeta();
       meta.remoteUpdatedAt = remoteMs;
-      meta.localUpdatedAt = Math.max(meta.localUpdatedAt || 0, remoteMs);
+      meta.localUpdatedAt = remoteMs;
+      meta.lastSyncAt = now;
+      meta.conflict = false;
       saveMeta(meta);
-      setStatus('☁️ Gesichert ✓');
+      pendingRemote = null;
+      setStatus('☁️ ✓', fmtSyncTime(now), `Zuletzt gesichert: ${fmtSyncTime(now)}`);
     } catch (error) {
       console.warn('Cloud-Sync push failed:', error);
-      setStatus('☁️ Offline');
+      setStatus('☁️ Offline', 'Nicht gesichert', 'Cloud nicht erreichbar');
     } finally {
       syncing = false;
     }
@@ -133,41 +182,79 @@
       if (typeof payload.sidequests === 'string') nativeSetItem.call(localStorage, SIDE_KEY, payload.sidequests);
       if (typeof payload.history === 'string') nativeSetItem.call(localStorage, HISTORY_KEY, payload.history);
       const remoteMs = Date.parse(updatedAt) || Date.now();
-      saveMeta({ localUpdatedAt: remoteMs, remoteUpdatedAt: remoteMs });
+      saveMeta({
+        localUpdatedAt: remoteMs,
+        remoteUpdatedAt: remoteMs,
+        lastSyncAt: Date.now(),
+        conflict: false
+      });
     } finally {
       suppress = false;
     }
+    pendingRemote = null;
     location.reload();
+  }
+
+  function markConflict(remotePayload, updatedAt) {
+    pendingRemote = { data: remotePayload, updatedAt };
+    const meta = getMeta();
+    meta.conflict = true;
+    saveMeta(meta);
+    setStatus('⚠️ Konflikt', 'Tippen zum Lösen', 'Lokal und Cloud wurden seit dem letzten Sync geändert');
+  }
+
+  async function resolveConflict() {
+    if (!pendingRemote) {
+      const meta = getMeta();
+      meta.conflict = false;
+      saveMeta(meta);
+      await syncNow();
+      return;
+    }
+
+    const keepLocal = window.confirm('Cloud-Konflikt. OK = lokale Daten behalten und hochladen. Abbrechen = Cloud-Version laden.');
+    const meta = getMeta();
+    meta.conflict = false;
+    saveMeta(meta);
+    if (keepLocal) await pushLocal();
+    else applyRemote(pendingRemote.data, pendingRemote.updatedAt);
   }
 
   async function syncNow() {
     if (!getToken() || syncing) return;
     syncing = true;
-    setStatus('☁️ Sync…');
+    setStatus('☁️ ↕', 'Prüft…');
 
     try {
       const { response, data } = await request('GET');
-
       if (response.status === 401) {
         localStorage.removeItem(TOKEN_KEY);
-        setStatus('☁️ Code nötig');
+        setStatus('☁️ Aus', 'Code ungültig');
         return;
       }
-
       if (response.status === 404) {
         syncing = false;
         await pushLocal();
         return;
       }
-
       if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
 
       const remoteMs = Date.parse(data.updatedAt) || 0;
       const meta = getMeta();
       const localMs = Number(meta.localUpdatedAt) || 0;
+      const previousRemote = Number(meta.remoteUpdatedAt) || 0;
+
+      if (previousRemote > 0) {
+        const localDirty = localMs > previousRemote + 1000;
+        const remoteDirty = remoteMs > previousRemote + 1000;
+        if (localDirty && remoteDirty) {
+          markConflict(data.data, data.updatedAt);
+          return;
+        }
+      }
 
       if (remoteMs > localMs + 1000) {
-        setStatus('☁️ Lädt…');
+        setStatus('☁️ ↓', 'Lädt…');
         applyRemote(data.data, data.updatedAt);
         return;
       }
@@ -178,19 +265,22 @@
         return;
       }
 
+      const now = Date.now();
       meta.remoteUpdatedAt = remoteMs;
       if (!meta.localUpdatedAt) meta.localUpdatedAt = remoteMs;
+      meta.lastSyncAt = now;
+      meta.conflict = false;
       saveMeta(meta);
-      setStatus('☁️ Aktuell ✓');
+      setStatus('☁️ ✓', fmtSyncTime(now), `Zuletzt geprüft: ${fmtSyncTime(now)}`);
     } catch (error) {
       console.warn('Cloud-Sync pull failed:', error);
-      setStatus('☁️ Offline');
+      setStatus('☁️ Offline', 'Nicht erreichbar', 'Cloud nicht erreichbar');
     } finally {
       syncing = false;
     }
   }
 
-  function onCloudButton() {
+  async function onCloudButton() {
     if (!getToken()) {
       const token = window.prompt('Cloud-Sync Code eingeben:');
       if (!token || !token.trim()) return;
@@ -198,10 +288,15 @@
       const meta = getMeta();
       if (!meta.localUpdatedAt) meta.localUpdatedAt = Date.now();
       saveMeta(meta);
-      syncNow();
+      await syncNow();
       return;
     }
-    syncNow();
+
+    if (getMeta().conflict) {
+      await resolveConflict();
+      return;
+    }
+    await syncNow();
   }
 
   ensureCloudButton();

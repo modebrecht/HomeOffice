@@ -62,9 +62,18 @@
 }
 
 @media(max-width:450px){
+  /* The outer module stays one column; only quest cards use the 50/50 grid. */
+  .sidequest-inner{grid-template-columns:1fr!important}
+  .sidequest-grid,.sidequest-actions,.sidequest-panel{grid-column:1/-1!important}
+  .sidequest-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+  .custom-sidequest-grid{display:contents!important}
+  .sidequest.full-row{grid-column:1/-1!important}
   .sidequest-actions{gap:5px!important}
   .sidequest-action-btn{font-size:.66rem!important;padding:6px 7px!important}
   .sidequest-add-form{gap:5px!important}
-  .sidequest-add-form input{min-height:34px!important;font-size:.78rem}
+  .sidequest-add-form input,.sidequest-add-form select{min-height:34px!important;font-size:.78rem}
+  .sq-counter-controls{gap:2px!important}
+  .sq-segments{min-width:40px!important;gap:2px!important}
+  .sq-segment{min-width:5px!important;height:6px!important}
   .side .custom-add{min-height:34px!important}
 }
